@@ -6,10 +6,19 @@ from collections import defaultdict
 from functools import reduce
 from typing import Dict, List, Union
 
-from .utils import (element_wise_product, inverse_matrix, isclose,
-                    matrix_multiplication, normalize, probability, product,
-                    scalar_vector_product, vector_add, vector_to_diagonal,
-                    weighted_sample_with_replacement)
+from .utils import (
+    element_wise_product,
+    inverse_matrix,
+    isclose,
+    matrix_multiplication,
+    normalize,
+    probability,
+    product,
+    scalar_vector_product,
+    vector_add,
+    vector_to_diagonal,
+    weighted_sample_with_replacement,
+)
 
 Number = Union[int, float]
 
@@ -24,7 +33,7 @@ class ProbDist:
     (0.125, 0.375, 0.5)
     """
 
-    def __init__(self, varname='?', freqs=None):
+    def __init__(self, varname="?", freqs=None):
         """If freqs is given, it is a dictionary of values - frequency pairs,
         then ProbDist is normalized."""
         self.prob: Dict[str, Number] = {}
@@ -58,11 +67,15 @@ class ProbDist:
                 self.prob[val] /= total
         return self
 
-    def show_approx(self, numfmt='{:.3g}') -> str:
+    def show_approx(self, numfmt="{:.3g}") -> str:
         """Show the probabilities rounded and sorted by key, for the
         sake of portable doctests."""
-        return ', '.join([('{}: ' + numfmt).format(v, p)
-                          for (v, p) in sorted(self.prob.items())])
+        return ", ".join(
+            [
+                ("{}: " + numfmt).format(v, p)
+                for (v, p) in sorted(self.prob.items())
+            ]
+        )
 
     def __repr__(self):
         return "P({})".format(self.varname)
@@ -117,6 +130,7 @@ def event_values(event, variables):
     else:
         return tuple([event[var] for var in variables])
 
+
 # ______________________________________________________________________________
 
 
@@ -142,8 +156,8 @@ def enumerate_joint(variables, e, P):
     if not variables:
         return P[e]
     Y, rest = variables[0], variables[1:]
-    return sum([enumerate_joint(rest, {**e, Y: y}, P)
-                for y in P.values(Y)])
+    return sum([enumerate_joint(rest, {**e, Y: y}, P) for y in P.values(Y)])
+
 
 # ______________________________________________________________________________
 
@@ -170,7 +184,7 @@ class BayesNet:
         for parent in node.parents:
             self.variable_node(parent).children.append(node)
 
-    def variable_node(self, var) -> 'BayesNode':
+    def variable_node(self, var) -> "BayesNode":
         """Return the node for the variable named var.
         >>> burglary.variable_node('Burglary').variable
         'Burglary'"""
@@ -184,7 +198,7 @@ class BayesNet:
         return [True, False]
 
     def __repr__(self):
-        return 'BayesNet({0!r})'.format(self.nodes)
+        return "BayesNet({0!r})".format(self.nodes)
 
 
 class DecisionNetwork(BayesNet):
@@ -287,21 +301,26 @@ class BayesNode:
         return probability(self.p(True, event))
 
     def __repr__(self):
-        return repr((self.variable, ' '.join(self.parents)))
+        return repr((self.variable, " ".join(self.parents)))
 
 
 # Burglary example [Figure 14.2]
 
 T, F = True, False
 
-burglary = BayesNet([
-    ('Burglary', '', 0.001),
-    ('Earthquake', '', 0.002),
-    ('Alarm', 'Burglary Earthquake',
-     {(T, T): 0.95, (T, F): 0.94, (F, T): 0.29, (F, F): 0.001}),
-    ('JohnCalls', 'Alarm', {T: 0.90, F: 0.05}),
-    ('MaryCalls', 'Alarm', {T: 0.70, F: 0.01})
-])
+burglary = BayesNet(
+    [
+        ("Burglary", "", 0.001),
+        ("Earthquake", "", 0.002),
+        (
+            "Alarm",
+            "Burglary Earthquake",
+            {(T, T): 0.95, (T, F): 0.94, (F, T): 0.29, (F, F): 0.001},
+        ),
+        ("JohnCalls", "Alarm", {T: 0.90, F: 0.05}),
+        ("MaryCalls", "Alarm", {T: 0.70, F: 0.01}),
+    ]
+)
 
 # ______________________________________________________________________________
 
@@ -331,8 +350,11 @@ def enumerate_all(variables, e, bn):
     if Y in e:
         return Ynode.p(e[Y], e) * enumerate_all(rest, e, bn)
     else:
-        return sum(Ynode.p(y, e) * enumerate_all(rest, {**e, Y: y}, bn)
-                   for y in bn.variable_values(Y))
+        return sum(
+            Ynode.p(y, e) * enumerate_all(rest, {**e, Y: y}, bn)
+            for y in bn.variable_values(Y)
+        )
+
 
 # ______________________________________________________________________________
 
@@ -356,14 +378,16 @@ def is_hidden(var, X, e):
     return var != X and var not in e
 
 
-def make_factor(var, e, bn) -> 'Factor':
+def make_factor(var, e, bn: BayesNet) -> "Factor":
     """Return the factor for var in bn's joint distribution given e.
     That is, bn's full joint distribution, projected to accord with e,
     is the pointwise product of these factors for bn's variables."""
     node = bn.variable_node(var)
     variables = [X for X in [var] + node.parents if X not in e]
-    cpt = {event_values(e1, variables): node.p(e1[var], e1)
-           for e1 in all_events(variables, bn, e)}
+    cpt = {
+        event_values(e1, variables): node.p(e1[var], e1)
+        for e1 in all_events(variables, bn, e)
+    }
     return Factor(variables, cpt)
 
 
@@ -387,26 +411,32 @@ class Factor:
         self.variables = variables
         self.cpt = cpt
 
-    def pointwise_product(self, other, bn) -> 'Factor':
+    def pointwise_product(self, other, bn) -> "Factor":
         """Multiply two factors, combining their variables."""
         variables = list(set(self.variables) | set(other.variables))
-        cpt = {event_values(e, variables): self.p(e) * other.p(e)
-               for e in all_events(variables, bn, {})}
+        cpt = {
+            event_values(e, variables): self.p(e) * other.p(e)
+            for e in all_events(variables, bn, {})
+        }
         return Factor(variables, cpt)
 
-    def sum_out(self, var, bn) -> 'Factor':
+    def sum_out(self, var, bn) -> "Factor":
         """Make a factor eliminating var by summing over its values."""
         variables = [X for X in self.variables if X != var]
-        cpt = {event_values(e, variables): sum(self.p({**e, var: val})
-                                               for val in bn.variable_values(var))
-               for e in all_events(variables, bn, {})}
+        cpt = {
+            event_values(e, variables): sum(
+                self.p({**e, var: val}) for val in bn.variable_values(var)
+            )
+            for e in all_events(variables, bn, {})
+        }
         return Factor(variables, cpt)
 
     def normalize(self) -> ProbDist:
         """Return my probabilities; must be down to one variable."""
         assert len(self.variables) == 1
-        return ProbDist(self.variables[0],
-                        {k: v for ((k,), v) in self.cpt.items()})
+        return ProbDist(
+            self.variables[0], {k: v for ((k,), v) in self.cpt.items()}
+        )
 
     def p(self, e):
         """Look up my value tabulated for e."""
@@ -423,17 +453,24 @@ def all_events(variables, bn, e):
             for x in bn.variable_values(X):
                 yield {**e1, X: x}
 
+
 # ______________________________________________________________________________
 
 # [Figure 14.12a]: sprinkler network
 
 
-sprinkler = BayesNet([
-    ('Cloudy', '', 0.5),
-    ('Sprinkler', 'Cloudy', {T: 0.10, F: 0.50}),
-    ('Rain', 'Cloudy', {T: 0.80, F: 0.20}),
-    ('WetGrass', 'Sprinkler Rain',
-     {(T, T): 0.99, (T, F): 0.90, (F, T): 0.90, (F, F): 0.00})])
+sprinkler = BayesNet(
+    [
+        ("Cloudy", "", 0.5),
+        ("Sprinkler", "Cloudy", {T: 0.10, F: 0.50}),
+        ("Rain", "Cloudy", {T: 0.80, F: 0.20}),
+        (
+            "WetGrass",
+            "Sprinkler Rain",
+            {(T, T): 0.99, (T, F): 0.90, (F, T): 0.90, (F, F): 0.00},
+        ),
+    ]
+)
 
 # ______________________________________________________________________________
 
@@ -445,6 +482,7 @@ def prior_sample(bn):
     for node in bn.nodes:
         event[node.variable] = node.sample(event)
     return event
+
 
 # _________________________________________________________________________
 
@@ -469,8 +507,8 @@ def rejection_sampling(X, e, bn, N=10000):
 
 def consistent_with(event, evidence):
     """Is event consistent with the given evidence?"""
-    return all(evidence.get(k, v) == v
-               for k, v in event.items())
+    return all(evidence.get(k, v) == v for k, v in event.items())
+
 
 # _________________________________________________________________________
 
@@ -485,7 +523,9 @@ def likelihood_weighting(X, e, bn, N=10000):
     """
     W = {x: 0 for x in bn.variable_values(X)}
     for j in range(N):
-        sample, weight = weighted_sample(bn, e)  # boldface x, w in [Figure 14.15]
+        sample, weight = weighted_sample(
+            bn, e
+        )  # boldface x, w in [Figure 14.15]
         W[sample[X]] += weight
     return ProbDist(X, W)
 
@@ -503,6 +543,7 @@ def weighted_sample(bn, e):
         else:
             event[Xi] = node.sample(event)
     return event, w
+
 
 # _________________________________________________________________________
 
@@ -532,10 +573,12 @@ def markov_blanket_sample(X, e, bn):
     for xi in bn.variable_values(X):
         ei = {**e, X: xi}
         # [Equation 14.12:]
-        Q[xi] = Xnode.p(xi, e) * product(Yj.p(ei[Yj.variable], ei)
-                                         for Yj in Xnode.children)
+        Q[xi] = Xnode.p(xi, e) * product(
+            Yj.p(ei[Yj.variable], ei) for Yj in Xnode.children
+        )
     # (assuming a Boolean variable here)
     return probability(Q.normalize()[True])
+
 
 # _________________________________________________________________________
 
@@ -556,8 +599,10 @@ class HiddenMarkovModel:
 
 
 def forward(HMM, fv, ev):
-    prediction = vector_add(scalar_vector_product(fv[0], HMM.transition_model[0]),
-                            scalar_vector_product(fv[1], HMM.transition_model[1]))
+    prediction = vector_add(
+        scalar_vector_product(fv[0], HMM.transition_model[0]),
+        scalar_vector_product(fv[1], HMM.transition_model[1]),
+    )
     sensor_dist = HMM.sensor_dist(ev)
 
     return normalize(element_wise_product(sensor_dist, prediction))
@@ -567,8 +612,12 @@ def backward(HMM, b, ev):
     sensor_dist = HMM.sensor_dist(ev)
     prediction = element_wise_product(sensor_dist, b)
 
-    return normalize(vector_add(scalar_vector_product(prediction[0], HMM.transition_model[0]),
-                                scalar_vector_product(prediction[1], HMM.transition_model[1])))
+    return normalize(
+        vector_add(
+            scalar_vector_product(prediction[0], HMM.transition_model[0]),
+            scalar_vector_product(prediction[1], HMM.transition_model[1]),
+        )
+    )
 
 
 def forward_backward(HMM, ev, prior):
@@ -580,7 +629,9 @@ def forward_backward(HMM, ev, prior):
 
     fv = [[0.0, 0.0] for _ in range(len(ev))]
     b = [1.0, 1.0]
-    bv = [b]    # we don't need bv; but we will have a list of all backward messages here
+    bv = [
+        b
+    ]  # we don't need bv; but we will have a list of all backward messages here
     sv = [[0, 0] for _ in range(len(ev))]
 
     fv[0] = prior
@@ -595,6 +646,7 @@ def forward_backward(HMM, ev, prior):
     sv = sv[::-1]
 
     return sv
+
 
 # _________________________________________________________________________
 
@@ -616,7 +668,9 @@ def fixed_lag_smoothing(e_t, HMM, d, ev, t):
     if t > d:
         f = forward(HMM, f, e_t)
         O_tmd = vector_to_diagonal(HMM.sensor_dist(ev[t - d]))
-        B = matrix_multiplication(inverse_matrix(O_tmd), inverse_matrix(T_model), B, T_model, O_t)
+        B = matrix_multiplication(
+            inverse_matrix(O_tmd), inverse_matrix(T_model), B, T_model, O_t
+        )
     else:
         B = matrix_multiplication(B, T_model, O_t)
     t += 1
@@ -626,6 +680,7 @@ def fixed_lag_smoothing(e_t, HMM, d, ev, t):
         return [normalize(i) for i in matrix_multiplication([f], B)][0]
     else:
         return None
+
 
 # _________________________________________________________________________
 
@@ -637,17 +692,19 @@ def particle_filtering(e, N, HMM):
     w = [0 for _ in range(N)]
     # STEP 1
     # Propagate one step using transition model given prior state
-    dist = vector_add(scalar_vector_product(dist[0], HMM.transition_model[0]),
-                      scalar_vector_product(dist[1], HMM.transition_model[1]))
+    dist = vector_add(
+        scalar_vector_product(dist[0], HMM.transition_model[0]),
+        scalar_vector_product(dist[1], HMM.transition_model[1]),
+    )
     # Assign state according to probability
-    s = ['A' if probability(dist[0]) else 'B' for _ in range(N)]
+    s = ["A" if probability(dist[0]) else "B" for _ in range(N)]
     w_tot = 0
     # Calculate importance weight given evidence e
     for i in range(N):
-        if s[i] == 'A':
+        if s[i] == "A":
             # P(U|A)*P(A)
             w_i = HMM.sensor_dist(e)[0] * dist[0]
-        if s[i] == 'B':
+        if s[i] == "B":
             # P(U|B)*P(B)
             w_i = HMM.sensor_dist(e)[1] * dist[1]
         w[i] = w_i
@@ -667,6 +724,7 @@ def particle_filtering(e, N, HMM):
 
     return s
 
+
 # _________________________________________________________________________
 ## TODO: Implement continuous map for MonteCarlo similar to Fig25.10 from the book
 
@@ -674,12 +732,18 @@ def particle_filtering(e, N, HMM):
 class MCLmap:
     """Map which provides probability distributions and sensor readings.
     Consists of discrete cells which are either an obstacle or empty"""
+
     def __init__(self, m):
         self.m = m
         self.nrows = len(m)
         self.ncols = len(m[0])
         # list of empty spaces in the map
-        self.empty = [(i, j) for i in range(self.nrows) for j in range(self.ncols) if not m[i][j]]
+        self.empty = [
+            (i, j)
+            for i in range(self.nrows)
+            for j in range(self.ncols)
+            if not m[i][j]
+        ]
 
     def sample(self):
         """Returns a random kinematic state possible in the map"""
@@ -697,12 +761,19 @@ class MCLmap:
         #  0
         # 3R1
         #  2
-        delta = ((sensor_num % 2 == 0)*(sensor_num - 1), (sensor_num % 2 == 1)*(2 - sensor_num))
+        delta = (
+            (sensor_num % 2 == 0) * (sensor_num - 1),
+            (sensor_num % 2 == 1) * (2 - sensor_num),
+        )
         # sensor direction changes based on orientation
         for _ in range(orient):
             delta = (delta[1], -delta[0])
         range_count = 0
-        while (0 <= pos[0] < self.nrows) and (0 <= pos[1] < self.nrows) and (not self.m[pos[0]][pos[1]]):
+        while (
+            (0 <= pos[0] < self.nrows)
+            and (0 <= pos[1] < self.nrows)
+            and (not self.m[pos[0]][pos[1]])
+        ):
             pos = vector_add(pos, delta)
             range_count += 1
         return range_count
@@ -715,11 +786,11 @@ def monte_carlo_localization(a, z, N, P_motion_sample, P_sensor, m, S=None):
         return m.ray_cast(sensor_num, kin_state)
 
     M = len(z)
-    W = [0]*N
-    S_ = [0]*N
-    W_ = [0]*N
-    v = a['v']
-    w = a['w']
+    W = [0] * N
+    S_ = [0] * N
+    W_ = [0] * N
+    v = a["v"]
+    w = a["w"]
 
     if S is None:
         S = [m.sample() for _ in range(N)]
