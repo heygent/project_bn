@@ -1,6 +1,6 @@
 """Probability models. (Chapter 13-15)
 """
-
+import itertools
 import random
 from collections import defaultdict
 from functools import reduce
@@ -443,13 +443,12 @@ class Factor:
 
 def all_events(variables, bn, e):
     """Yield every way of extending e with values for all variables."""
-    if not variables:
-        yield e
-    else:
-        X, rest = variables[0], variables[1:]
-        for e1 in all_events(rest, bn, e):
-            for x in bn.variable_values(X):
-                yield {**e1, X: x}
+    possible_values = [bn.variable_values(var) for var in variables]
+
+    for values in itertools.product(*possible_values):
+        result = dict(zip(variables, values))
+        result.update(e)
+        yield result
 
 
 # ______________________________________________________________________________
