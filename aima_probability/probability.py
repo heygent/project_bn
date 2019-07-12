@@ -264,22 +264,29 @@ class BayesNode:
 
         # We store the table always in the third form above.
         if isinstance(cpt, (float, int)):  # no parents, 0-tuple
-            cpt = {(): cpt}
+            cpt = {(): {True: cpt, False: 1 - cpt}}
         elif isinstance(cpt, dict):
             # one parent, 1-tuple
             if cpt and isinstance(list(cpt.keys())[0], bool):
-                cpt = {(v,): p for v, p in cpt.items()}
+                cpt = {(v,): {True: p, False: 1 - p} for v, p in cpt.items()}
+            else:
+                cpt = {v: {True: p, False: 1 - p} for v, p in cpt.items()}
 
         assert isinstance(cpt, dict)
-        for vs, p in cpt.items():
+        for vs, ps in cpt.items():
             assert isinstance(vs, tuple) and len(vs) == len(parents)
-            assert all(isinstance(v, bool) for v in vs)
-            assert 0 <= p <= 1
+            # assert all(isinstance(v, bool) for v in vs)
+            for p in ps.values():
+                assert 0 <= p <= 1
 
         self.variable = X
         self.parents = parents
         self.cpt = cpt
         self.children = []
+
+    @classmethod
+    def create(cls):
+        raise NotImplementedError
 
     def p(self, value, event):
         """Return the conditional probability
@@ -290,8 +297,7 @@ class BayesNode:
         >>> bn.p(False, {'Burglary': False, 'Earthquake': True})
         0.375"""
         assert isinstance(value, bool)
-        ptrue = self.cpt[event_values(event, self.parents)]
-        return ptrue if value else 1 - ptrue
+        return self.cpt[event_values(event, self.parents)][value]
 
     def sample(self, event):
         """Sample from the distribution for this variable conditioned
