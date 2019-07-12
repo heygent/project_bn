@@ -8,6 +8,7 @@ from typing import Dict, List, Union
 
 from .utils import (
     element_wise_product,
+first,
     inverse_matrix,
     isclose,
     matrix_multiplication,
@@ -162,7 +163,7 @@ def enumerate_joint(variables, e, P):
 # ______________________________________________________________________________
 
 
-class BayesNet:
+class BoolBayesNet:
     """Bayesian network containing only boolean-variable nodes."""
 
     def __init__(self, node_specs=None):
@@ -176,7 +177,7 @@ class BayesNet:
     def add(self, node_spec):
         """Add a node to the net. Its parents must already be in the
         net, and its variable must not."""
-        node = BayesNode(*node_spec)
+        node = BoolBayesNode(*node_spec)
         assert node.variable not in self.variables
         assert all((parent in self.variables) for parent in node.parents)
         self.nodes.append(node)
@@ -184,7 +185,7 @@ class BayesNet:
         for parent in node.parents:
             self.variable_node(parent).children.append(node)
 
-    def variable_node(self, var) -> "BayesNode":
+    def variable_node(self, var) -> "BoolBayesNode":
         """Return the node for the variable named var.
         >>> burglary.variable_node('Burglary').variable
         'Burglary'"""
@@ -201,7 +202,7 @@ class BayesNet:
         return "BayesNet({0!r})".format(self.nodes)
 
 
-class DecisionNetwork(BayesNet):
+class DecisionNetwork(BoolBayesNet):
     """An abstract class for a decision network as a wrapper for a BayesNet.
     Represents an agent's current state, its possible actions, reachable states
     and utilities of those states."""
@@ -230,37 +231,32 @@ class DecisionNetwork(BayesNet):
 
         return u
 
-
-class BayesNode:
+class BoolBayesNode:
     """A conditional probability distribution for a boolean variable,
     P(X | parents). Part of a BayesNet."""
 
-    def __init__(self, X, parents, cpt):
-        """X is a variable name, and parents a sequence of variable
-        names or a space-separated string.  cpt, the conditional
-        probability table, takes one of these forms:
-
-        * A number, the unconditional probability P(X=true). You can
-          use this form when there are no parents.
-
-        * A dict {v: p, ...}, the conditional probability distribution
-          P(X=true | parent=v) = p. When there's just one parent.
-
-        * A dict {(v1, v2, ...): p, ...}, the distribution P(X=true |
-          parent1=v1, parent2=v2, ...) = p. Each key must have as many
-          values as there are parents. You can use this form always;
-          the first two are just conveniences.
-
-        In all cases the probability of X being false is left implicit,
-        since it follows from P(X=true).
-
-        >>> X = BayesNode('X', '', 0.2)
-        >>> Y = BayesNode('Y', 'P', {T: 0.2, F: 0.7})
-        >>> Z = BayesNode('Z', 'P Q',
+    def __init__(self, X, parents, cpt, _bool_cpt=True):
+        """
+        >>> X = BoolBayesNode('X', '', 0.2)
+        >>> Y = BoolBayesNode('Y', 'P', {T: 0.2, F: 0.7})
+        >>> Z = BoolBayesNode('Z', 'P Q',
         ...    {(T, T): 0.2, (T, F): 0.3, (F, T): 0.5, (F, F): 0.7})
         """
+
         if isinstance(parents, str):
             parents = parents.split()
+
+        if _bool_cpt:
+            cpt = self._init_boolean_cpt(cpt, parents)
+
+        self.variable = X
+        self.parents = parents
+        self.cpt = cpt
+        self.children = []
+        self.domain = sorted(self.determine_domain(cpt))
+
+    @staticmethod
+    def _init_boolean_cpt(cpt, parents):
 
         # We store the table always in the third form above.
         if isinstance(cpt, (float, int)):  # no parents, 0-tuple
@@ -275,25 +271,36 @@ class BayesNode:
         assert isinstance(cpt, dict)
         for vs, ps in cpt.items():
             assert isinstance(vs, tuple) and len(vs) == len(parents)
-            # assert all(isinstance(v, bool) for v in vs)
+            assert all(isinstance(v, bool) for v in vs)
             for p in ps.values():
                 assert 0 <= p <= 1
+
+        return cpt
+
+    @staticmethod
+    def determine_domain(cpt: Dict):
+        cpt_entry_keys = set(first(cpt.values()).keys())
+        assert all(
+            set(cpt_value.keys()) == cpt_entry_keys
+            for cpt_value in cpt.values()
+        )
+        return cpt_entry_keys
+
+    @classmethod
+    def create(cls, X, parents, cpt):
+        self = cls(X, parents, cpt)
 
         self.variable = X
         self.parents = parents
         self.cpt = cpt
         self.children = []
 
-    @classmethod
-    def create(cls):
-        raise NotImplementedError
-
     def p(self, value, event):
         """Return the conditional probability
         P(X=value | parents=parent_values), where parent_values
         are the values of parents in event. (event must assign each
         parent a value.)
-        >>> bn = BayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
+        >>> bn = BoolBayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
         >>> bn.p(False, {'Burglary': False, 'Earthquake': True})
         0.375"""
         assert isinstance(value, bool)
@@ -306,6 +313,9 @@ class BayesNode:
         parents."""
         return probability(self.p(True, event))
 
+    def values(self):
+        return self.domain
+
     def __repr__(self):
         return repr((self.variable, " ".join(self.parents)))
 
@@ -314,7 +324,7 @@ class BayesNode:
 
 T, F = True, False
 
-burglary = BayesNet(
+burglary = BoolBayesNet(
     [
         ("Burglary", "", 0.001),
         ("Earthquake", "", 0.002),
@@ -384,7 +394,7 @@ def is_hidden(var, X, e):
     return var != X and var not in e
 
 
-def make_factor(var, e, bn: BayesNet) -> "Factor":
+def make_factor(var, e, bn: BoolBayesNet) -> "Factor":
     """Return the factor for var in bn's joint distribution given e.
     That is, bn's full joint distribution, projected to accord with e,
     is the pointwise product of these factors for bn's variables."""
@@ -465,7 +475,7 @@ def all_events(variables, bn, e):
 # [Figure 14.12a]: sprinkler network
 
 
-sprinkler = BayesNet(
+sprinkler = BoolBayesNet(
     [
         ("Cloudy", "", 0.5),
         ("Sprinkler", "Cloudy", {T: 0.10, F: 0.50}),

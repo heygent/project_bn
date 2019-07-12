@@ -110,17 +110,17 @@ def test_enumerate_joint_ask():
 
 
 def test_bayesnode_p():
-    bn = BayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
+    bn = BoolBayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
     assert bn.p(True, {'Burglary': True, 'Earthquake': False}) == 0.2
     assert bn.p(False, {'Burglary': False, 'Earthquake': True}) == 0.375
-    assert BayesNode('W', '', 0.75).p(False, {'Random': True}) == 0.25
+    assert BoolBayesNode('W', '', 0.75).p(False, {'Random': True}) == 0.25
 
 
 def test_bayesnode_sample():
-    X = BayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
+    X = BoolBayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
     assert X.sample({'Burglary': False, 'Earthquake': True}) in [True, False]
-    Z = BayesNode('Z', 'P Q', {(True, True): 0.2, (True, False): 0.3,
-                               (False, True): 0.5, (False, False): 0.7})
+    Z = BoolBayesNode('Z', 'P Q', {(True, True): 0.2, (True, False): 0.3,
+                                   (False, True): 0.5, (False, False): 0.7})
     assert Z.sample({'P': True, 'Q': False}) in [True, False]
 
 
