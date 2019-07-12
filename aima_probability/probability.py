@@ -174,7 +174,7 @@ class BayesNet:
         for node_spec in node_specs:
             self.add(node_spec)
 
-    def create_node(self, *args, **kwargs) -> 'BayesNode':
+    def create_node(self, *args, **kwargs) -> "BayesNode":
         return BayesNode(*args, **kwargs)
 
     def add(self, node_spec):
@@ -208,7 +208,7 @@ class BayesNet:
 class BoolBayesNet(BayesNet):
     """Bayesian network containing only boolean-variable nodes."""
 
-    def create_node(self, *args, **kwargs) -> 'BoolBayesNode':
+    def create_node(self, *args, **kwargs) -> "BoolBayesNode":
         return BoolBayesNode(*args, **kwargs)
 
 
@@ -394,7 +394,10 @@ def sum_out(var, factors, bn):
     """Eliminate var from all factors by summing over its values."""
     result, var_factors = [], []
     for f in factors:
-        (var_factors if var in f.variables else result).append(f)
+        if var in f.variables:
+            var_factors.append(f)
+        else:
+            result.append(f)
     result.append(pointwise_product(var_factors, bn).sum_out(var, bn))
     return result
 
