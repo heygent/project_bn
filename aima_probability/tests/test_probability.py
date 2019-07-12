@@ -381,7 +381,7 @@ def test_monte_carlo_localization():
 
 def test_gibbs_ask():
     possible_solutions = ['False: 0.16, True: 0.84', 'False: 0.17, True: 0.83',
-                          'False: 0.15, True: 0.85']
+                          'False: 0.15, True: 0.85', 'False: 0.165, True: 0.835']
     g_solution = gibbs_ask('Cloudy', dict(Rain=True), sprinkler, 200).show_approx()
     assert g_solution in possible_solutions
 

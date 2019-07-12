@@ -163,7 +163,7 @@ def enumerate_joint(variables, e, P):
 # ______________________________________________________________________________
 
 
-class BoolBayesNet:
+class BayesNet:
     """Bayesian network containing only boolean-variable nodes."""
 
     def __init__(self, node_specs=None):
@@ -174,10 +174,13 @@ class BoolBayesNet:
         for node_spec in node_specs:
             self.add(node_spec)
 
+    def create_node(self, *args, **kwargs) -> 'BayesNode':
+        return BayesNode(*args, **kwargs)
+
     def add(self, node_spec):
         """Add a node to the net. Its parents must already be in the
         net, and its variable must not."""
-        node = BoolBayesNode(*node_spec)
+        node = self.create_node(*node_spec)
         assert node.variable not in self.variables
         assert all((parent in self.variables) for parent in node.parents)
         self.nodes.append(node)
@@ -185,7 +188,7 @@ class BoolBayesNet:
         for parent in node.parents:
             self.variable_node(parent).children.append(node)
 
-    def variable_node(self, var) -> "BoolBayesNode":
+    def variable_node(self, var) -> "BayesNode":
         """Return the node for the variable named var.
         >>> burglary.variable_node('Burglary').variable
         'Burglary'"""
@@ -196,29 +199,26 @@ class BoolBayesNet:
 
     def variable_values(self, var):
         """Return the domain of var."""
-        return [True, False]
+        return self.variable_node(var).values()
 
     def __repr__(self):
         return "BayesNet({0!r})".format(self.nodes)
 
 
-class BoolBayesNode:
-    """A conditional probability distribution for a boolean variable,
+class BoolBayesNet(BayesNet):
+    """Bayesian network containing only boolean-variable nodes."""
+
+    def create_node(self, *args, **kwargs) -> 'BoolBayesNode':
+        return BoolBayesNode(*args, **kwargs)
+
+
+class BayesNode:
+    """A conditional probability distribution for a variable,
     P(X | parents). Part of a BayesNet."""
 
-    def __init__(self, X, parents, cpt, _bool_cpt=True):
-        """
-        >>> X = BoolBayesNode('X', '', 0.2)
-        >>> Y = BoolBayesNode('Y', 'P', {T: 0.2, F: 0.7})
-        >>> Z = BoolBayesNode('Z', 'P Q',
-        ...    {(T, T): 0.2, (T, F): 0.3, (F, T): 0.5, (F, F): 0.7})
-        """
-
+    def __init__(self, X, parents, cpt):
         if isinstance(parents, str):
             parents = parents.split()
-
-        if _bool_cpt:
-            cpt = self._init_boolean_cpt(cpt, parents)
 
         self.variable = X
         self.parents = parents
@@ -227,9 +227,52 @@ class BoolBayesNode:
         self.domain = sorted(self.determine_domain(cpt))
 
     @staticmethod
+    def determine_domain(cpt: Dict):
+        cpt_entry_keys = set(first(cpt.values()).keys())
+        assert all(
+            set(cpt_value.keys()) == cpt_entry_keys
+            for cpt_value in cpt.values()
+        )
+        return cpt_entry_keys
+
+    def p(self, value, event):
+        """Return the conditional probability
+        P(X=value | parents=parent_values), where parent_values
+        are the values of parents in event. (event must assign each
+        parent a value.)
+        >>> bn = BoolBayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
+        >>> bn.p(False, {'Burglary': False, 'Earthquake': True})
+        0.375"""
+        assert isinstance(value, bool)
+        return self.cpt[event_values(event, self.parents)][value]
+
+    def values(self):
+        return self.domain
+
+    def __repr__(self):
+        return repr((self.variable, " ".join(self.parents)))
+
+
+class BoolBayesNode(BayesNode):
+    """A conditional probability distribution for a boolean variable,
+    P(X | parents). Part of a BayesNet."""
+
+    def __init__(self, X, parents, cpt):
+        """
+        >>> X = BoolBayesNode('X', '', 0.2)
+        >>> Y = BoolBayesNode('Y', 'P', {T: 0.2, F: 0.7})
+        >>> Z = BoolBayesNode('Z', 'P Q',
+        ...    {(T, T): 0.2, (T, F): 0.3, (F, T): 0.5, (F, F): 0.7})
+        """
+        if isinstance(parents, str):
+            parents = parents.split()
+
+        cpt = self._init_boolean_cpt(cpt, parents)
+        super().__init__(X, parents, cpt)
+
+    @staticmethod
     def _init_boolean_cpt(cpt, parents):
 
-        # We store the table always in the third form above.
         if isinstance(cpt, (float, int)):  # no parents, 0-tuple
             cpt = {(): {True: cpt, False: 1 - cpt}}
         elif isinstance(cpt, dict):
@@ -248,47 +291,12 @@ class BoolBayesNode:
 
         return cpt
 
-    @staticmethod
-    def determine_domain(cpt: Dict):
-        cpt_entry_keys = set(first(cpt.values()).keys())
-        assert all(
-            set(cpt_value.keys()) == cpt_entry_keys
-            for cpt_value in cpt.values()
-        )
-        return cpt_entry_keys
-
-    @classmethod
-    def create(cls, X, parents, cpt):
-        self = cls(X, parents, cpt)
-
-        self.variable = X
-        self.parents = parents
-        self.cpt = cpt
-        self.children = []
-
-    def p(self, value, event):
-        """Return the conditional probability
-        P(X=value | parents=parent_values), where parent_values
-        are the values of parents in event. (event must assign each
-        parent a value.)
-        >>> bn = BoolBayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
-        >>> bn.p(False, {'Burglary': False, 'Earthquake': True})
-        0.375"""
-        assert isinstance(value, bool)
-        return self.cpt[event_values(event, self.parents)][value]
-
     def sample(self, event):
         """Sample from the distribution for this variable conditioned
         on event's values for parent_variables. That is, return True/False
         at random according with the conditional probability given the
         parents."""
         return probability(self.p(True, event))
-
-    def values(self):
-        return self.domain
-
-    def __repr__(self):
-        return repr((self.variable, " ".join(self.parents)))
 
 
 # Burglary example [Figure 14.2]
