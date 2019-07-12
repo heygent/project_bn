@@ -8,7 +8,7 @@ from typing import Dict, List, Union
 
 from .utils import (
     element_wise_product,
-first,
+    first,
     inverse_matrix,
     isclose,
     matrix_multiplication,
@@ -201,35 +201,6 @@ class BoolBayesNet:
     def __repr__(self):
         return "BayesNet({0!r})".format(self.nodes)
 
-
-class DecisionNetwork(BoolBayesNet):
-    """An abstract class for a decision network as a wrapper for a BayesNet.
-    Represents an agent's current state, its possible actions, reachable states
-    and utilities of those states."""
-
-    def __init__(self, action, infer):
-        """action: a single action node
-        infer: the preferred method to carry out inference on the given BayesNet"""
-        super(DecisionNetwork, self).__init__()
-        self.action = action
-        self.infer = infer
-
-    def best_action(self):
-        """Return the best action in the network"""
-        return self.action
-
-    def get_utility(self, action, state):
-        """Return the utility for a particular action and state in the network"""
-        raise NotImplementedError
-
-    def get_expected_utility(self, action, evidence):
-        """Compute the expected utility given an action and evidence"""
-        u = 0.0
-        prob_dist = self.infer(action, evidence, self).prob
-        for item, _ in prob_dist.items():
-            u += prob_dist[item] * self.get_utility(action, item)
-
-        return u
 
 class BoolBayesNode:
     """A conditional probability distribution for a boolean variable,
