@@ -12,13 +12,13 @@ def complement(value, **kwargs):
 sprinkler_plus_spec = [
     (
         "Season",
-        "",
+        [],
         {(): {"spring": 0.25, "summer": 0.25, "fall": 0.25, "winter": 0.25}},
     ),
-    ("Cloudy", "", {(): ptrue(0.4)}),
+    ("Cloudy", [], {(): ptrue(0.4)}),
     (
         "Sprinkler",
-        "Season Cloudy",
+        ["Season", "Cloudy"],
         {
             ("spring", True): ptrue(0.01),
             ("spring", False): ptrue(0.1),
@@ -32,7 +32,7 @@ sprinkler_plus_spec = [
     ),
     (
         "Rain",
-        "Season Cloudy",
+        ["Season", "Cloudy"],
         {
             ("spring", True): complement("no", heavy=0.2, light=0.4),
             ("spring", False): complement("no", heavy=0, light=0.1),
@@ -46,12 +46,12 @@ sprinkler_plus_spec = [
     ),
     (
         "RoadWet",
-        "Rain",
+        ["Rain"],
         {("heavy",): ptrue(1), ("light",): ptrue(0.9), ("no",): ptrue(0.01)},
     ),
     (
         "GrassWet",
-        "Sprinkler Rain",
+        ["Sprinkler", "Rain"],
         {
             (True, "heavy"): ptrue(1),
             (True, "light"): ptrue(0.99),
