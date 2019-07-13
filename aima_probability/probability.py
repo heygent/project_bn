@@ -243,7 +243,6 @@ class BayesNode:
         >>> bn = BoolBayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
         >>> bn.p(False, {'Burglary': False, 'Earthquake': True})
         0.375"""
-        assert isinstance(value, bool)
         return self.cpt[event_values(event, self.parents)][value]
 
     def values(self):
