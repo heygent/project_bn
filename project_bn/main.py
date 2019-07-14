@@ -1,5 +1,5 @@
 from aima_probability import *
-from project_bn.mpe import mpe
+from project_bn.mpe_ask import mpe_ask
 from bif_serializer import parse_bif
 import os
 
@@ -7,9 +7,9 @@ import os
 def main():
     # dir_path = os.path.dirname(os.path.realpath(__file__))
     # print(dir_path)
-    net = BayesNet(parse_bif("resources/adder.xml"))
+    net = BayesNet(parse_bif("resources/earthquake.xml"))
     # burglary_ = burglary
-    ris = mpe('Burglary', dict(Alarm=True), net)
+    ris = mpe_ask(dict(Alarm=True), net)
 
     print(ris.show_approx())
 

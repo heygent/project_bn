@@ -3,6 +3,7 @@ from math import isclose
 import pytest
 
 from project_bn.map_ask import map_ask
+from project_bn.mpe_ask import mpe_ask
 from project_bn.nets import make_sprinkler_plus
 
 
@@ -36,4 +37,5 @@ def test_map(Ms, e, bn, expected_map_value, expected_assignments):
     ],
 )
 def test_mpe(e, bn, expected_mpe_value, expected_assignments):
-    pytest.fail("Not implemented")
+    result = mpe_ask([], e, bn)
+
