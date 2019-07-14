@@ -59,7 +59,15 @@ def topological_sort(variables: Iterable[Variable]):
     return sorted_variables
 
 
-def parse_bif(path: str, domain_mapper=None):
+def boolean_domain_mapper(_, domain):
+    if domain == ["True", "False"]:
+        return [True, False]
+    if domain == ["False", "True"]:
+        return [False, True]
+    return domain
+
+
+def parse_bif(path: str, domain_mapper=boolean_domain_mapper):
     tree = element_tree.parse(path)
     root = tree.getroot().find("NETWORK")
     variables: Dict[str, Variable] = {}
@@ -89,5 +97,3 @@ def parse_bif(path: str, domain_mapper=None):
         var.to_bayes_node_spec()
         for var in topological_sort(variables.values())
     ]
-
-
