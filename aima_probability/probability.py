@@ -243,7 +243,6 @@ class BayesNode:
         >>> bn = BoolBayesNode('X', 'Burglary', {T: 0.2, F: 0.625})
         >>> bn.p(False, {'Burglary': False, 'Earthquake': True})
         0.375"""
-        assert isinstance(value, bool)
         return self.cpt[event_values(event, self.parents)][value]
 
     def values(self):
@@ -320,7 +319,7 @@ burglary = BoolBayesNet(
 # ______________________________________________________________________________
 
 
-def enumeration_ask(X, e, bn):
+def enumeration_ask(X, e, bn) -> ProbDist:
     """Return the conditional probability distribution of variable X
     given evidence e, from BayesNet bn. [Figure 14.9]
     >>> enumeration_ask('Burglary', dict(JohnCalls=T, MaryCalls=T), burglary
@@ -354,7 +353,7 @@ def enumerate_all(variables, e, bn):
 # ______________________________________________________________________________
 
 
-def elimination_ask(X, e, bn):
+def elimination_ask(X, e, bn) -> ProbDist:
     """Compute bn's P(X|e) by variable elimination. [Figure 14.11]
     >>> elimination_ask('Burglary', dict(JohnCalls=T, MaryCalls=T), burglary
     ...  ).show_approx()
