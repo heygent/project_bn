@@ -369,7 +369,10 @@ def elimination_ask(X, e, bn) -> ProbDist:
 
 def is_hidden(var, X, e):
     """Is var a hidden variable when querying P(X|e)?"""
-    return var != X and var not in e
+    if isinstance(X, list):
+        return var not in X and var not in e
+    else:
+        return var != X and var not in e
 
 
 def make_factor(var, e, bn: BoolBayesNet) -> "Factor":
@@ -408,17 +411,19 @@ class Factor:
         self.variables = variables
         self.cpt = cpt
 
-    def pointwise_product(self, other, bn) -> "Factor":
-        """Multiply two factors, combining their variables."""
+    def _pointwise_product(self, other, bn):
         variables = list(set(self.variables) | set(other.variables))
         cpt = {
             event_values(e, variables): self.p(e) * other.p(e)
             for e in all_events(variables, bn, {})
         }
-        return Factor(variables, cpt)
+        return variables, cpt
 
-    def sum_out(self, var, bn) -> "Factor":
-        """Make a factor eliminating var by summing over its values."""
+    def pointwise_product(self, other, bn) -> "Factor":
+        """Multiply two factors, combining their variables."""
+        return Factor(*self._pointwise_product(other, bn))
+
+    def _sum_out(self, var, bn):
         variables = [X for X in self.variables if X != var]
         cpt = {
             event_values(e, variables): sum(
@@ -426,7 +431,11 @@ class Factor:
             )
             for e in all_events(variables, bn, {})
         }
-        return Factor(variables, cpt)
+        return variables, cpt
+
+    def sum_out(self, var, bn) -> "Factor":
+        """Make a factor eliminating var by summing over its values."""
+        return Factor(*self._sum_out(var, bn))
 
     def normalize(self) -> ProbDist:
         """Return my probabilities; must be down to one variable."""

@@ -2,7 +2,7 @@ from math import isclose
 
 import pytest
 
-from bif_serializer.deserialize import parse_bif
+from bif_serializer.deserialize import parse_bif_spec
 from project_bn.nets.sprinkler_plus import sprinkler_plus_spec
 
 
@@ -16,12 +16,12 @@ def boolean_domain_mapper(_, domain):
     "filepath,expected", [("resources/SprinklerPlus.xml", sprinkler_plus_spec)]
 )
 def test_deserialize(filepath, expected):
-    spec = parse_bif(filepath, domain_mapper=boolean_domain_mapper)
+    spec = parse_bif_spec(filepath, domain_mapper=boolean_domain_mapper)
     specs_eq(spec, sprinkler_plus_spec)
 
 
 def test_topological_sort():
-    spec = parse_bif(
+    spec = parse_bif_spec(
         "resources/SprinklerPlus.xml", domain_mapper=boolean_domain_mapper
     )
 

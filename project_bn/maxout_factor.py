@@ -3,23 +3,18 @@ from aima_probability import *
 __all__ = ["MaxoutFactor", "make_maxout_factor"]
 
 
-class MaxoutFactor:
+class MaxoutFactor(Factor):
     """A factor in a joint distribution."""
 
     def __init__(self, variables, cpt, previous_assignments=None):
-        self.variables = variables
-        self.cpt = cpt
+        super().__init__(variables, cpt)
         self.previous_assignments = previous_assignments or {
             key: {} for key in cpt.keys()
         }
 
     def pointwise_product(self, other: "MaxoutFactor", bn) -> "MaxoutFactor":
         """Multiply two factors, combining their variables."""
-        variables = list(set(self.variables) | set(other.variables))
-        cpt = {
-            event_values(e, variables): self.p(e) * other.p(e)
-            for e in all_events(variables, bn, {})
-        }
+        variables, cpt = self._pointwise_product(other, bn)
         assignments = {
             event_values(e, variables): {
                 **self.previous_assignments[event_values(e, self.variables)],
@@ -28,6 +23,9 @@ class MaxoutFactor:
             for e in all_events(variables, bn, {})
         }
         return MaxoutFactor(variables, cpt, assignments)
+
+    def sum_out(self, var, bn) -> "MaxoutFactor":
+        return MaxoutFactor(*self._sum_out(var, bn))
 
     def max_out(self, var, bn) -> "MaxoutFactor":
         """Make a factor eliminating var by summing over its values."""
@@ -64,17 +62,6 @@ class MaxoutFactor:
             print("----------")
 
         return MaxoutFactor(variables, cpt, mpe)
-
-    def normalize(self) -> ProbDist:
-        """Return my probabilities; must be down to one variable."""
-        assert len(self.variables) == 1
-        return ProbDist(
-            self.variables[0], {k: v for ((k,), v) in self.cpt.items()}
-        )
-
-    def p(self, e):
-        """Look up my value tabulated for e."""
-        return self.cpt[event_values(e, self.variables)]
 
 
 def make_maxout_factor(var, e, bn: BayesNet) -> "MaxoutFactor":
