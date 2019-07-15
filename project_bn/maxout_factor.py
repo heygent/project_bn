@@ -3,29 +3,30 @@ from aima_probability import *
 __all__ = ["MaxoutFactor", "make_maxout_factor"]
 
 
-class MaxoutFactor(Factor):
+class MaxoutFactor:
     """A factor in a joint distribution."""
 
-    def __init__(self, variables, cpt, previous_assignments=None):
-        super().__init__(variables, cpt)
+    def __init__(self, factor, previous_assignments=None):
+        self.factor = factor
         self.previous_assignments = previous_assignments or {
-            key: {} for key in cpt.keys()
+            key: {} for key in factor.cpt.keys()
         }
 
     def pointwise_product(self, other: "MaxoutFactor", bn) -> "MaxoutFactor":
         """Multiply two factors, combining their variables."""
-        variables, cpt = self._pointwise_product(other, bn)
+        factor = self.factor.pointwise_product(other, bn)
         assignments = {
-            event_values(e, variables): {
+            event_values(e, factor.variables): {
                 **self.previous_assignments[event_values(e, self.variables)],
                 **other.previous_assignments[event_values(e, other.variables)],
             }
-            for e in all_events(variables, bn, {})
+            for e in all_events(factor.variables, bn, {})
         }
-        return MaxoutFactor(variables, cpt, assignments)
+        return MaxoutFactor(factor, assignments)
 
-    def sum_out(self, var, bn) -> "MaxoutFactor":
-        return MaxoutFactor(*self._sum_out(var, bn))
+    def sum_out(self, var, bn):
+        factor = self.factor.sum_out(var, bn)
+        return MaxoutFactor(factor)
 
     def max_out(self, var, bn) -> "MaxoutFactor":
         """Make a factor eliminating var by summing over its values."""
@@ -51,27 +52,11 @@ class MaxoutFactor(Factor):
                 var: max_value,
             }
 
-            print("----------")
-            print(f"max_value == {max_value}")
-            print(f"max_p     == {max_p}")
+        return MaxoutFactor(Factor(variables, cpt), mpe)
 
-            print(f"e == {e}")
-            print(f"cpt_key == {cpt_key}")
-            print(f"mpe[{cpt_key}] == {mpe[cpt_key]}")
-            print(f"cpt[{cpt_key}] == {cpt[cpt_key]}")
-            print("----------")
-
-        return MaxoutFactor(variables, cpt, mpe)
+    def __getattr__(self, item):
+        return getattr(self.factor, item)
 
 
 def make_maxout_factor(var, e, bn: BayesNet) -> "MaxoutFactor":
-    """Return the factor for var in bn's joint distribution given e.
-    That is, bn's full joint distribution, projected to accord with e,
-    is the pointwise product of these factors for bn's variables."""
-    node = bn.variable_node(var)
-    variables = [X for X in [var] + node.parents if X not in e]
-    cpt = {
-        event_values(e1, variables): node.p(e1[var], e1)
-        for e1 in all_events(variables, bn, e)
-    }
-    return MaxoutFactor(variables, cpt)
+    return MaxoutFactor(make_factor(var, e, bn))

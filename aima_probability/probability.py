@@ -375,7 +375,7 @@ def is_hidden(var, X, e):
         return var != X and var not in e
 
 
-def make_factor(var, e, bn: BoolBayesNet) -> "Factor":
+def make_factor(var, e, bn: BayesNet) -> "Factor":
     """Return the factor for var in bn's joint distribution given e.
     That is, bn's full joint distribution, projected to accord with e,
     is the pointwise product of these factors for bn's variables."""
@@ -411,19 +411,17 @@ class Factor:
         self.variables = variables
         self.cpt = cpt
 
-    def _pointwise_product(self, other, bn):
+    def pointwise_product(self, other, bn) -> "Factor":
+        """Multiply two factors, combining their variables."""
         variables = list(set(self.variables) | set(other.variables))
         cpt = {
             event_values(e, variables): self.p(e) * other.p(e)
             for e in all_events(variables, bn, {})
         }
-        return variables, cpt
+        return Factor(variables, cpt)
 
-    def pointwise_product(self, other, bn) -> "Factor":
-        """Multiply two factors, combining their variables."""
-        return Factor(*self._pointwise_product(other, bn))
-
-    def _sum_out(self, var, bn):
+    def sum_out(self, var, bn) -> "Factor":
+        """Make a factor eliminating var by summing over its values."""
         variables = [X for X in self.variables if X != var]
         cpt = {
             event_values(e, variables): sum(
@@ -431,11 +429,7 @@ class Factor:
             )
             for e in all_events(variables, bn, {})
         }
-        return variables, cpt
-
-    def sum_out(self, var, bn) -> "Factor":
-        """Make a factor eliminating var by summing over its values."""
-        return Factor(*self._sum_out(var, bn))
+        return Factor(variables, cpt)
 
     def normalize(self) -> ProbDist:
         """Return my probabilities; must be down to one variable."""
