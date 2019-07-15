@@ -1,4 +1,10 @@
-from aima_probability import *
+from aima_probability import (
+    BayesNet,
+    Factor,
+    all_events,
+    event_values,
+    make_factor,
+)
 
 __all__ = ["MaxoutFactor", "make_maxout_factor"]
 
@@ -6,7 +12,7 @@ __all__ = ["MaxoutFactor", "make_maxout_factor"]
 class MaxoutFactor:
     """A factor in a joint distribution."""
 
-    def __init__(self, factor, previous_assignments=None):
+    def __init__(self, factor: Factor, previous_assignments=None):
         self.factor = factor
         self.previous_assignments = previous_assignments or {
             key: {} for key in factor.cpt.keys()
@@ -23,10 +29,6 @@ class MaxoutFactor:
             for e in all_events(factor.variables, bn, {})
         }
         return MaxoutFactor(factor, assignments)
-
-    def sum_out(self, var, bn):
-        factor = self.factor.sum_out(var, bn)
-        return MaxoutFactor(factor)
 
     def max_out(self, var, bn) -> "MaxoutFactor":
         """Make a factor eliminating var by summing over its values."""
