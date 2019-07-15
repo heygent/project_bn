@@ -1,5 +1,7 @@
 from aima_probability import *
 
+__all__ = ["MaxoutFactor", "make_maxout_factor"]
+
 
 class MaxoutFactor:
     """A factor in a joint distribution."""
