@@ -9,12 +9,10 @@ class KalmanResult(NamedTuple):
     gain: np.ndarray
 
 
-def get_a_priori_estimate(
-    old_prediction: np.ndarray, deltat: float, control: float
-):
-    A = np.array([1, deltat], [0, 1])
-    B = np.array([[0.5 * deltat ** 2], [deltat]])
-    return A @ old_prediction + B @ [control]
+def get_a_priori_estimate(state: np.ndarray, timedelta: float, control: float):
+    A = np.array([1, timedelta], [0, 1])
+    B = np.array([[0.5 * timedelta ** 2], [timedelta]])
+    return A @ state + B @ [control]
 
 
 def get_a_priori_error_cov(state_cov, timedelta, Q=np.zeros((2, 2))):
@@ -26,7 +24,7 @@ def get_a_priori_error_cov(state_cov, timedelta, Q=np.zeros((2, 2))):
 
 
 def get_a_posteriori_estimate(a_priori_estimate, measurement, gain):
-    return a_priori_estimate + gain @ measurement
+    return a_priori_estimate + gain @ (measurement - a_priori_estimate)
 
 
 def get_a_posteriori_error_cov(previous_cov, gain):
@@ -46,7 +44,13 @@ def get_gain(state_cov, mea_cov):
 
 
 def kalman_filter(
-    state, state_cov, control, measurements, mea_cov, timedelta, pnoise_cov
+    state,
+    state_cov,
+    measurements,
+    mea_cov,
+    control=0,
+    timedelta=1,
+    pnoise_cov=np.zeros((2, 2)),
 ):
     for measurement in measurements:
         state = get_a_priori_estimate(state, timedelta, control)
