@@ -9,6 +9,8 @@ pytest = "*"
 [packages]
 numpy = "*"
 matplotlib = "*"
+altair = "*"
+pandas = "*"
 
 [requires]
 python_version = "3.7"

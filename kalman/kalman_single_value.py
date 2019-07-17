@@ -33,6 +33,10 @@ def get_estimate_err(gain, estimate_error):
 
 if __name__ == "__main__":
     from pprint import pprint
+    import pandas as pd
+    import altair as alt
+
     # Valore vero: 72
     # Esempio da https://www.youtube.com/watch?v=SIQJaqYVtuE
-    pprint(list(kalman_filter(68, 2, [75, 71, 70, 74], 4)))
+    results = list(kalman_filter(68, 2, [75, 71, 70, 74], 4))
+    results_df = pd.DataFrame(results)
