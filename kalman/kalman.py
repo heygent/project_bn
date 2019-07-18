@@ -46,16 +46,17 @@ def get_gain(state_cov, mea_cov):
 def kalman_filter(
     state,
     state_cov,
-    measurements,
     mea_cov,
     control=0,
     timedelta=1,
     pnoise_cov=np.zeros((2, 2)),
 ):
-    for measurement in measurements:
+    measurement = yield
+    while True:
         state = get_a_priori_estimate(state, timedelta, control)
         state_cov = get_a_priori_error_cov(state_cov, timedelta, pnoise_cov)
         gain = get_gain(state_cov, mea_cov)
         state = get_a_posteriori_estimate(state, measurement, gain)
         state_cov = get_a_posteriori_error_cov(state_cov, gain)
-        yield KalmanResult(state, state_cov, gain)
+        measurement = yield KalmanResult(state, state_cov, gain)
+
