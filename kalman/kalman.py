@@ -60,3 +60,33 @@ def kalman_filter(
         state_cov = get_a_posteriori_error_cov(state_cov, gain)
         measurement = yield KalmanResult(state, state_cov, gain)
 
+
+def simulation():
+
+    # stato iniziale reale
+    real_state = np.array([[0, 0]])
+
+    # rumore del processo
+    Q = np.diag([1, 2])
+
+    # rumore dei sensori
+    R = np.diag([2, 1])
+
+    kalman_filter(
+        state=np.array([1, 1]),
+        state_cov=np.diag([2, 2]),
+        mea_cov=np.diag([1, 2]),
+        control=1,
+        timedelta=1,
+        pnoise_cov=np.diag([2, 2]),
+    )
+
+    for i in range(1, 60):
+
+        w = np.array([1, 2])
+
+        nuovo_stato_pallina = get_a_priori_estimate(real_state, 1, 2) + w
+
+        misurazioni_sensori = np.array([1, 2], [3, 4])
+
+        
