@@ -9,10 +9,10 @@ class KalmanResult(NamedTuple):
     gain: np.ndarray
 
 
-def get_a_priori_estimate(state: np.ndarray, timedelta: float, control: float):
-    A = np.array([1, timedelta], [0, 1])
+def calculate_movement(state: np.ndarray, timedelta: float, control: float):
+    A = np.array([[1, timedelta], [0, 1]])
     B = np.array([[0.5 * timedelta ** 2], [timedelta]])
-    return A @ state + B @ [control]
+    return A @ state + B * control
 
 
 def get_a_priori_error_cov(state_cov, timedelta, Q=np.zeros((2, 2))):
@@ -53,7 +53,7 @@ def kalman_filter(
 ):
     measurement = yield
     while True:
-        state = get_a_priori_estimate(state, timedelta, control)
+        state = calculate_movement(state, timedelta, control)
         state_cov = get_a_priori_error_cov(state_cov, timedelta, pnoise_cov)
         gain = get_gain(state_cov, mea_cov)
         state = get_a_posteriori_estimate(state, measurement, gain)
@@ -61,32 +61,49 @@ def kalman_filter(
         measurement = yield KalmanResult(state, state_cov, gain)
 
 
-def simulation():
+def noise(covariance):
+    sample = np.random.multivariate_normal(np.zeros(2), covariance)
+    return sample.reshape(2, 1)
 
-    # stato iniziale reale
-    real_state = np.array([[0, 0]])
 
-    # rumore del processo
-    Q = np.diag([1, 2])
+class SimulationResult:
+    variable: str
+    real_value: float
+    measured_value: float
+    estimated_value: float
+    estimated_error: float
+    gain: float
 
-    # rumore dei sensori
-    R = np.diag([2, 1])
 
-    kalman_filter(
-        state=np.array([1, 1]),
-        state_cov=np.diag([2, 2]),
-        mea_cov=np.diag([1, 2]),
-        control=1,
-        timedelta=1,
-        pnoise_cov=np.diag([2, 2]),
+def simulate_moving_object(
+    real_state,
+    real_state_cov,
+    real_sensor_cov,
+    acceleration,
+    kalman_state=None,
+    kalman_state_cov=None,
+    kalman_sensor_cov=None,
+    timedelta=1,
+):
+    kalman_state = kalman_state if kalman_state is not None else real_state
+    kalman_state_cov = (
+        kalman_state_cov if kalman_state_cov is not None else real_state_cov
+    )
+    kalman_sensor_cov = (
+        kalman_sensor_cov if kalman_sensor_cov is not None else real_sensor_cov
     )
 
-    for i in range(1, 60):
-
-        w = np.array([1, 2])
-
-        nuovo_stato_pallina = get_a_priori_estimate(real_state, 1, 2) + w
-
-        misurazioni_sensori = np.array([1, 2], [3, 4])
-
-        
+    kf = kalman_filter(
+        kalman_state,
+        kalman_state_cov,
+        kalman_sensor_cov,
+        control=acceleration,
+        timedelta=timedelta,
+    )
+    next(kf)
+    while True:
+        real_state = calculate_movement(real_state, timedelta, acceleration)
+        real_state += noise(real_state_cov)
+        measurement = real_state + noise(real_sensor_cov)
+        kalman_prediction = kf.send(measurement)
+        yield real_state, kalman_prediction
