@@ -106,4 +106,4 @@ def simulate_moving_object(
         real_state += noise(real_state_cov)
         measurement = real_state + noise(real_sensor_cov)
         kalman_prediction = kf.send(measurement)
-        yield real_state, kalman_prediction
+        yield real_state, measurement, kalman_prediction
