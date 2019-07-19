@@ -16,7 +16,7 @@ lang: it
 knitr::opts_chunk$set(echo = TRUE)
 options(tinytex.verbose = TRUE)
 library(reticulate)
-use_python("/home/graygent/.local/share/virtualenvs/project_bn-FCUqQCcy/bin/python")
+use_python("/home/sinopeta/Scrivania/IA/Torta/Progetto/venv/bin/python")
 ```
 
 ```{python setup_py, include=FALSE}
@@ -109,9 +109,8 @@ Nella prima simulazione, il Kalman Filter riceve i valori giusti riguardanti lo 
 Quando la funzione non riceve parametri riguardanti il Kalman Filter, li imposta implicitamente a quelli reali, impostando come covarianza
 iniziale dello stato la covarianza reale del processo.
 
-Dal grafico, si può vedere come le misurazioni siano più rilevanti nella stima fatta nelle fasi iniziali del processo,
-specialmente nel caso della velocità: verso la fine, misurazioni molto sbilanciate (ad es. verso l'istante 25) fanno cambiare di poco
-la stima.
+Dal grafico possiamo vedere come le misurazioni effettuate nelle fasi iniziali del processo, influiscano in maniera più importante sull l'andamento della stima.
+Nelle ultime fasi invece vediamo che misurazioni molto sbilanciate fanno cambiare di poco la stima, come nel caso della velocità verso l'istante 25.
 
 In seguito mostriamo covarianza dello stato e Kalman Gain nell'ultimo istante di simulazione.
 
@@ -122,9 +121,8 @@ results[-1].kalman.gain
 
 ## Stime scorrette, covarianze corrette
 
-Nel secondo esperimento, proviamo a dare al Kalman Filter stime iniziali molto sbagliate rispetto alla posizione reale.
-Diamo sempre lo stesso seed al generatore di numeri casuali, così che gli stati generati dal simulatore siano gli stessi
-di prima.
+Nel secondo esperimento, proviamo a dare al Kalman Filter stime iniziali molto lontane rispetto alla posizione reale.
+Al fine di generare gli stessi stati dell'esperimento precedente, assegniamo sempre lo stesso seed al generatore di numeri casuali.
 
 ```{python, fig.cap="Risultati per il secondo esperimento."}
 np.random.seed(20190719)
@@ -155,8 +153,8 @@ results[-1].kalman.state_cov
 
 ## Stime scorrette, covarianza dello stato iniziale a 0
 
-Nel prossimo esperimento, vogliamo continuare a dare in input al filtro la stessa stima errata dello stato iniziale, 
-e inoltre impostare a zero la covarianza dello stato iniziale.
+Nel prossimo esperimento, diamo di nuovo in input al filtro una stima errata dello stato iniziale, 
+ma impostiamo a zero la covarianza dello stato iniziale.
 
 ```{python, fig.cap="Risultati per il terzo esperimento."}
 np.random.seed(20190719)
