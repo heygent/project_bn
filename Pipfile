@@ -9,10 +9,7 @@ pytest = "*"
 [packages]
 numpy = "*"
 matplotlib = "*"
-altair = "*"
 pandas = "*"
-plotnine = "*"
-seaborn = "*"
 
 [requires]
 python_version = "3.7"

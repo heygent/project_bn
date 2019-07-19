@@ -3,7 +3,7 @@
 import itertools
 import random
 from collections import defaultdict
-from functools import reduce
+from functools import reduce,singledispatch
 from typing import Dict, List, Union
 
 from .utils import (
