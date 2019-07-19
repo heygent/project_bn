@@ -66,29 +66,31 @@ def noise(covariance):
     return sample.reshape(2, 1)
 
 
-class SimulationResult:
-    variable: str
-    real_value: float
-    measured_value: float
-    estimated_value: float
-    estimated_error: float
-    gain: float
+class SimResult(NamedTuple):
+    state: np.ndarray
+    measurement: np.ndarray
+    kalman: KalmanResult
 
 
 def simulate_moving_object(
     real_state,
-    real_state_cov,
+    real_process_cov,
     real_sensor_cov,
     acceleration,
     kalman_state=None,
     kalman_state_cov=None,
+    kalman_process_cov=None,
     kalman_sensor_cov=None,
-    pnoise_cov=np.zeros((2, 2)),
     timedelta=1,
 ):
     kalman_state = kalman_state if kalman_state is not None else real_state
     kalman_state_cov = (
-        kalman_state_cov if kalman_state_cov is not None else real_state_cov
+        kalman_state_cov if kalman_state_cov is not None else real_process_cov
+    )
+    kalman_process_cov = (
+        kalman_process_cov
+        if kalman_process_cov is not None
+        else real_process_cov
     )
     kalman_sensor_cov = (
         kalman_sensor_cov if kalman_sensor_cov is not None else real_sensor_cov
@@ -100,12 +102,12 @@ def simulate_moving_object(
         kalman_sensor_cov,
         control=acceleration,
         timedelta=timedelta,
-        pnoise_cov=pnoise_cov,
+        pnoise_cov=kalman_process_cov,
     )
     next(kf)
     while True:
         real_state = calculate_movement(real_state, timedelta, acceleration)
-        real_state += noise(real_state_cov)
+        real_state += noise(real_process_cov)
         measurement = real_state + noise(real_sensor_cov)
         kalman_prediction = kf.send(measurement)
-        yield real_state, measurement, kalman_prediction
+        yield SimResult(real_state, measurement, kalman_prediction)
