@@ -105,8 +105,8 @@ def get_a_priori_error_cov(state_cov, timedelta, Q):
     return A @ state_cov @ A.T + Q
 ```
 
-`calculate_movement` è la legge del moto accelerato sotto forma matriciale, dove il parametro `control` sta a
-indicare l'accelerazione dell'oggetto. La usiamo sia per fare le predizioni all'interno del Kalman Filter, sia
+`calculate_movement` è una funzione che calcola posizione e velocità a partire dalla legge oraria del moto accellerato, dove il parametro `control` sta a
+indicare il valore dell'accelerazione dell'oggetto. La usiamo sia per fare le predizioni all'interno del Kalman Filter, sia
 per simulare poi l'oggetto in movimento.
 
 `get_a_priori_error_cov` fa invece la stima a priori della covarianza. Tramite $Q$, va a tenere in conto
@@ -156,7 +156,7 @@ Viene quindi simulata una misurazione sullo stato, prendendo lo stato reale e ag
 tramite il parametro `real_sensor_cov`.
 
 La misurazione viene poi mandata al Kalman Filter, che provvede a produrre una predizione.
-La funzione quindi dà in output lo stato reale, la misurazione effettuata, e la corrispondente predizione fatta dal Kalman Filter, 
+La funzione quindi restituisce in output lo stato reale, la misurazione effettuata, e la corrispondente predizione fatta dal Kalman Filter,
 per poi procedere all'iterazione successiva in cui ripete il procedimento.
 
 # Prove
@@ -211,7 +211,7 @@ Quando la funzione non riceve parametri riguardanti il Kalman Filter, li imposta
 iniziale dello stato la covarianza reale del processo.
 
 Dal grafico possiamo vedere come le misurazioni effettuate nelle fasi iniziali del processo, influiscano in maniera più importante sull l'andamento della stima.
-Nelle ultime fasi invece vediamo che misurazioni molto sbilanciate fanno cambiare di poco la stima, come nel caso della velocità verso l'istante 25.
+Nelle ultime fasi. Vediamo invece che misurazioni molto sbilanciate fanno cambiare di poco la stima, come nel caso della velocità verso l'istante 25.
 
 In seguito mostriamo covarianza dello stato e Kalman Gain nell'ultimo istante di simulazione.
 
@@ -310,9 +310,9 @@ di troppo poco per avvicinarsi a quella reale.
 
 ## Stime corrette, cov. sensori reale alta, cov. sensori stimata vicina a 0
 
-In questo esperimento, vogliamo simulare un processo molto deterministico, dove la stima del processo senza il contributo delle osservazioni
+In questo esperimento, vogliamo simulare un processo deterministico, dove la stima del processo senza il contributo delle osservazioni
 darebbe dei buoni risultati di per sé. Tuttavia, vogliamo che il Kalman Filter dia più peso alle osservazioni, che in questo caso
-faremo essere molto imprecise. Per fare ciò, diamo una covarianza al rumore dei sensori nel processo reale, e una bassa a quella
+saranno molto imprecise. Per fare ciò, diamo un alta covarianza al rumore dei sensori nel processo reale, e una bassa covarianza a quella
 stimata del Kalman Filter.
 
 ```{python, fig.cap="Risultati per il quinto esperimento."}
