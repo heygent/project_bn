@@ -24,7 +24,7 @@ def plot_variable(real_states, measurements, kalman_predictions):
 
 
 def plot_results(real_states, measurements, kalman_predictions, title):
-    pl.figure(figsize=(6, 6))
+    pl.figure(figsize=(6, 5.5))
     if title:
         pl.suptitle(title)
     x_data = (
@@ -45,7 +45,7 @@ def plot_results(real_states, measurements, kalman_predictions, title):
     pl.xlabel("istante (t)")
     pl.ylabel("velocità")
     plot_variable(*y_data)
-    # pl.tight_layout()
+    pl.tight_layout()
     pl.show()
 
 

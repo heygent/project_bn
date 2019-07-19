@@ -8,15 +8,18 @@ output:
     template: ./eisvogel.tex
     toc: true
     toc_depth: 2
+    pandoc_args: ["--listings", "-V", "listings-no-page-break=true"]
   html_document: default
+
 lang: it
+graphics: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(tinytex.verbose = TRUE)
 library(reticulate)
-use_python("/home/sinopeta/Scrivania/IA/Torta/Progetto/venv/bin/python")
+use_python("/home/graygent/.local/share/virtualenvs/project_bn-FCUqQCcy/bin/python")
 ```
 
 ```{python setup_py, include=FALSE}
@@ -45,7 +48,7 @@ L'implementazione del Kalman Filter è contenuta nel file `kalman_filter/kalman.
 è implementato per eseguire una previsione sulla posizione e sulla velocità di un oggetto.
 Il codice è il seguente:
 
-```{python, eval=FALSE}
+```{python, eval=FALSE, caption="ciacia"}
 def kalman_filter(state, state_cov, mea_cov, control=0,
                   timedelta=1, pnoise_cov=np.diag((0.1, 0.1))):
     measurement = yield
@@ -188,12 +191,13 @@ simulazione. Ogni tupla contiene:
 Inoltre, la funzione stampa un grafico che rappresenta gli stati reali, le misurazioni, e gli stati
 predetti dal filtro, che useremo per fare delle valutazioni sui risultati ottenuti.
 
+
+
 ## Stime e covarianze corrette
 
 ```{python, fig.cap="Risultati per il primo esperimento."}
 np.random.seed(20190719)
 results = kalman_simulation(
-    title="Stime e covarianze corrette",
     iterations=30,
     real_state=np.array([0, 2]).reshape(2, 1),
     real_process_cov=np.diag([1000, 2]),
@@ -224,7 +228,6 @@ Al fine di generare gli stessi stati dell'esperimento precedente, assegniamo sem
 ```{python, fig.cap="Risultati per il secondo esperimento."}
 np.random.seed(20190719)
 results = kalman_simulation(
-    title="Stime scorrette, covarianze corrette",
     iterations=30,
     real_state=np.array([0, 2]).reshape(2, 1),
     real_process_cov=np.diag([1000, 2]),
@@ -256,7 +259,6 @@ ma impostiamo a zero la covarianza dello stato iniziale.
 ```{python, fig.cap="Risultati per il terzo esperimento."}
 np.random.seed(20190719)
 results = kalman_simulation(
-    title="Stime scorrette, covarianza stato iniziale a zero",
     iterations=30,
     real_state=np.array([0, 2]).reshape(2, 1),
     real_process_cov=np.diag([1000, 2]),
@@ -282,7 +284,6 @@ in questo caso siano completamente errate.
 ```{python, fig.cap="Risultati per il quarto esperimento."}
 np.random.seed(20190719)
 results = kalman_simulation(
-    title="Stime scorrette, covarianza processo vicina a 0",
     iterations=30,
     real_state=np.array([0, 2]).reshape(2, 1),
     real_process_cov=np.diag([1000, 2]),
@@ -317,7 +318,6 @@ stimata del Kalman Filter.
 ```{python, fig.cap="Risultati per il quinto esperimento."}
 np.random.seed(19072019)
 results = kalman_simulation(
-    title="Stime scorrette, covarianza processo vicina a 0",
     iterations=30,
     real_state=np.array([0, 2]).reshape(2, 1),
     real_process_cov=np.diag([1, 1]),
@@ -335,10 +335,9 @@ come ci aspettavamo.
 In questa prova, replichiamo l'esperimento precedente, dando in input al Kalman Filter covarianze sia dei sensori che del processo
 vicine allo 0.
 
-```{python, fig.cap="Risultati per il quinto esperimento."}
+```{python, fig.cap="Risultati per il sesto esperimento."}
 np.random.seed(19072019)
 results = kalman_simulation(
-    title="Stime scorrette, covarianza processo vicina a 0",
     iterations=30,
     real_state=np.array([0, 2]).reshape(2, 1),
     real_process_cov=np.diag([1, 1]),
@@ -357,4 +356,10 @@ verso l'istante 15 nei due grafici, dove le misurazioni sono lontane dalla media
 results[15].kalman.gain
 results[15].kalman.state_cov
 ```
+
+# Conclusioni
+
+Il Kalman Filter è un potente strumento con cui fare inferenza, e riesce a dare buoni risultati in situazioni di 
+forte incertezza. I parametri più cruciali per la buona configurazione di un Kalman Filter sono le covarianze: con buone stime di covarianza del processo e del rumore dei sensori, le approssimazioni date si avvicinano molto allo stato reale. Sono meno importanti le stime iniziali dello stato e della covarianza dello stato: anche con stime iniziali molto errate rispetto allo stato reale, il Kalman Filter riesce a fare buone approssimazioni in poche iterazioni.
+
 

@@ -13,7 +13,7 @@ def mpe_ask(e, bn: BayesNet):
 
 ```
 
-`mpe_ask` Crea un fattore per ogni variabile della rete bayesiana e salva tutte le variabili di cui bisogna fare il max out nella lista `to_max_out`, in questo caso tutte tranne l'evidenza.
+`mpe_ask` crea un fattore per ogni variabile della rete bayesiana e salva tutte le variabili di cui bisogna fare il max out nella lista `to_max_out`, in questo caso tutte tranne l'evidenza.
 
 ```python
 def maxout_all(factors, to_max_out, bn):
@@ -41,7 +41,10 @@ def max_out(var, factors, bn):
     return result
 ```
 
-`max_out` crea un nuovo fattore effettuando il`pointwase_product` per tutti i fattori che hanno in comune un determinata variabile. Effettua il max out della variabile sul fattore restituito dal pointwase_product e infine restituisce il risultato.
+`max_out` crea un nuovo fattore effettuando il `pointwise_product` per tutti i
+fattori che hanno in comune un determinata variabile. Effettua il max out della
+variabile sul fattore restituito dal pointwise_product e infine restituisce il
+risultato.
 
 ```python
 def max_out(self, var, bn) -> "MaxoutFactor":
@@ -72,14 +75,21 @@ def max_out(self, var, bn) -> "MaxoutFactor":
 
 ```
 
-`max_out (metodo di maxout_factor)` Effettua il max out di una determinata variabile all'interno del fattore. Per ogni evidenza calcola la probabilità condizionata su tutte le variabili salvando il massimo, uscito dal ciclo aggiorna la CPT e salva il valore massimo in un dizionario. Infine restituisce il fattore ottenuto.
+`max_out` (metodo di maxout_factor) effettua il max out di una determinata
+variabile all'interno del fattore. Per ogni evidenza calcola la probabilità
+condizionata su tutte le variabili salvando il massimo, uscito dal ciclo
+aggiorna la CPT e salva il valore massimo in un dizionario. Infine restituisce
+il fattore ottenuto.
 
-La classe `maxout_factor` è una copia della classe `Factor` della libreria _aima core_ con l'aggiunta della funzione `max_out` sopra descritta.
+La classe `maxout_factor` è una copia della classe `Factor` della libreria
+_aima core_ con l'aggiunta della funzione `max_out` sopra descritta.
 
 # Map
 
 ## implementazione
-Abbiamo implementato il metodo  di inferenza MAP sfruttando parte delle funzioni scritte per il metodo MPE.
+
+Abbiamo implementato il metodo  di inferenza MAP sfruttando parte delle
+funzioni scritte per il metodo MPE.
 
 ```python
 def map_ask(Ms: List[str], e: dict, bn: BayesNet) -> Tuple[dict, float]:
@@ -92,10 +102,16 @@ def map_ask(Ms: List[str], e: dict, bn: BayesNet) -> Tuple[dict, float]:
     return maxout_all([MaxoutFactor(f) for f in factors], Ms, bn)
 ```
 
-`map_ask` crea i fattori per ogni variabile all'interno della rete bayesiana,  se la variabile è una variabile nascosta effettua il sum out di quella variabile dal fattore. In fine richiama `maxout_all` prendendo come parametro la lista dei fattori risultanti dal sum out e le variabili MAP. Da questo punto in poi l'algoritmo proseguirà come per MPE per tutte le variabili MAP rimaste.
+`map_ask` crea i fattori per ogni variabile all'interno della rete bayesiana,
+se la variabile è una variabile nascosta effettua il sum out di quella
+variabile dal fattore. In fine richiama `maxout_all` prendendo come parametro
+la lista dei fattori risultanti dal sum out e le variabili MAP. Da questo punto
+in poi l'algoritmo proseguirà come per MPE per tutte le variabili MAP rimaste.
 
 # Analisi
-Abbiamo confrontato i due metodi di inferenza prendendo in considerazione le seguenti variabili:
+
+Abbiamo confrontato i due metodi di inferenza prendendo in considerazione le
+seguenti variabili:
 
 1. Grandezza e complessità della rete bayesiana
 2. Numero di evidenze
@@ -112,12 +128,18 @@ Il confronto è stato effettuato su tre domini:
 * Child e Insurance hanno grandezza simile ma complessità differente
 * Hailfinder e ha dimensione e complessità maggiori
 
-Per effettuare le prove ci siamo serviti della funzione `create_random_evidence` che assegna a una  determinata percentuale di nodi un valore casuale del suo dominio.
-Lo stesso ragionamento è applicato per selezionare le variabili di MAP, data una determinata percentuale la funzione crea una lista di variabili casuali diverse da quelle dell'evidenza.  
-La quantità di nodi è stata espressa in percentuale al fine di dare alle misurazioni una valenza più oggettiva.
+Per effettuare le prove ci siamo serviti della funzione
+`create_random_evidence` che assegna a una  determinata percentuale di nodi un
+valore casuale del suo dominio. Lo stesso ragionamento è applicato per
+selezionare le variabili di MAP, data una determinata percentuale la funzione
+crea una lista di variabili casuali diverse da quelle dell'evidenza.  
+La quantità di nodi è stata espressa in percentuale al fine di dare alle
+misurazioni una valenza più oggettiva.
 
 ### Grandezza
-Per confrontare le due inferenze in base alla grandezza del dominio abbiamo deciso di tenere fissa la percentuale dei nodi evidenza al 10% e la percentuale di variabili MAP al 50%, il tempo è espresso in secondi.
+Per confrontare le due inferenze in base alla grandezza del dominio abbiamo
+deciso di tenere fissa la percentuale dei nodi evidenza al 10% e la percentuale
+di variabili MAP al 50%, il tempo è espresso in secondi.
 
 | Name       | MPE                  | MAP                 |
 | ---------- | -------------------- | ------------------- |
