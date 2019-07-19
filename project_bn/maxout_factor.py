@@ -38,7 +38,7 @@ class MaxoutFactor:
 
         for e in all_events(variables, bn, {}):
             cpt_key = event_values(e, variables)
-            max_p = 0
+            max_p = -1
             max_value = None
             for val in bn.variable_values(var):
                 val_p = self.p({**e, var: val})
