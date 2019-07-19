@@ -83,6 +83,7 @@ def simulate_moving_object(
     kalman_state=None,
     kalman_state_cov=None,
     kalman_sensor_cov=None,
+    pnoise_cov=np.zeros((2, 2)),
     timedelta=1,
 ):
     kalman_state = kalman_state if kalman_state is not None else real_state
@@ -99,6 +100,7 @@ def simulate_moving_object(
         kalman_sensor_cov,
         control=acceleration,
         timedelta=timedelta,
+        pnoise_cov=pnoise_cov,
     )
     next(kf)
     while True:

@@ -27,6 +27,9 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ```{python}
 from kalman_filter.kalman import kalman_filter
+from kalman_filter.kalman_sim import kalman_simulation
+import numpy as np
+import random
 print(inspect.getsource(kalman_filter))
 ```
 
@@ -34,8 +37,17 @@ print(inspect.getsource(kalman_filter))
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{python}
+random.seed("esperimento 1")
+
+kalman_simulation(
+    iterations=30,
+    real_state=np.array([0, 2]).reshape(2, 1),
+    real_state_cov=np.diag([10, 2]),
+    real_sensor_cov=np.diag([40, 2]),
+    pnoise_cov=np.diag([0, 2]),
+    acceleration=1,
+)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
