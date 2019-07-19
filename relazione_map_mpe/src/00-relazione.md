@@ -7,7 +7,7 @@ author:
   - Alessandro Caputo
 lang: it
 titlepage: true
-titlepage-color: 3d5a6c
+titlepage-color: "7F171F"
 titlepage-text-color: FFFFFF
 titlepage-rule-color: FFFFFF
 toc-own-page: true
@@ -88,7 +88,7 @@ il nuovo fattore ottenuto.
 
 Il fattore restituito è di tipo `MaxoutFactor`, un wrapper attorno alla classe
 `Factor` della libreria `aima-python` che aggiunge l'operazione di maxout e
-che mantiene la memoria delle assegnazioni fatte durante questa.
+che mantiene la memoria delle assegnazioni fatte durante questa fase.
 
 ```python
 def max_out(self, var, bn) -> "MaxoutFactor":

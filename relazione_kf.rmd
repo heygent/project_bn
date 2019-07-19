@@ -3,6 +3,9 @@ title: "Kalman Filter"
 subtitle: "Progetto di Intelligenza Artificiale e Laboratorio, Parte 3"
 author: "Emanuele Gentiletti, Alessandro Caputo"
 titlepage: true
+titlepage-color: "0d160b"
+titlepage-text-color: "ffbf00"
+titlepage-rule-color: "ffbf00"
 output:
   pdf_document:
     template: ./eisvogel.tex
@@ -10,7 +13,6 @@ output:
     toc_depth: 2
     pandoc_args: ["--listings", "-V", "listings-no-page-break=true"]
   html_document: default
-
 lang: it
 graphics: yes
 ---
