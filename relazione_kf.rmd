@@ -37,10 +37,13 @@ nell'implementazione di un Kalman Filter, e nell'esecuzione di diverse simulazio
 parametri iniziali. In seguito descriviamo l'implementazione da noi
 scritta, e mostriamo, commentandoli, i dati ottenuti dalle varie prove eseguite.
 
-# Implementazione del Kalman Filter
+# Implementazione
 
-L'implementazione del Kalman Filter è contenuta nel file `kalman_filter/kalman.py`. Il codice è il
-seguente:
+## Kalman Filter
+
+L'implementazione del Kalman Filter è contenuta nel file `kalman_filter/kalman.py`. Il Kalman Filter
+è implementato per eseguire una previsione sulla posizione e sulla velocità di un oggetto.
+Il codice è il seguente:
 
 ```{python, eval=FALSE}
 def kalman_filter(state, state_cov, mea_cov, control=0,
@@ -56,8 +59,102 @@ def kalman_filter(state, state_cov, mea_cov, control=0,
 
 ```
 
-Il Kalman Filter è implementato come un generatore. Il generatore
+Il Kalman Filter è implementato come un generatore. C'è un loop infinito, che si interrompe ogni volta nell'esecuzione
+dell'espressione `yield`, aspettando la misurazione successiva tramite cui calcolare la previsione.
 
+L'uso del Kalman Filter è il seguente:
+
+```{python, eval=FALSE}
+kf = kalman_filter(...)
+next(kf)
+result1 = kf.send(measurement1)
+result2 = kf.send(measurement2)
+```
+
+Tramite l'esecuzione di `next`, il generatore si esegue fino alla prima richiesta di valori,
+rappresentata da `measurement = yield`. Chiamando poi `kf.send`, si invia al generatore il valore da assegnare
+a `measurement`, che riprende quindi ad eseguirsi fino a produrre il risultato relativo a quella misurazione.
+
+La logica all'interno di `kalman_filter` funziona in questo modo:
+
+- Calcola una stima a priori dello stato basata sulla legge oraria del moto accelerato, tramite `calculate_movement`
+- Calcola una stima a priori della covarianza dello stato, a partire dalla covarianza dello stato precedente (o quella iniziale)
+  e dal rumore del processo.
+- Calcola il gain.
+- Calcola la stima a posteriori dello stato, basata su quella a priori, sulla misurazione e sul gain.
+- Calcola la covarianza a posteriori dello stato, pesandola sul gain.
+- Produci come risultato lo stato, la stima della covarianza dello stato e il gain.
+
+Le stime a priori sono fatte tramite le leggi della fisica, in modo da stimare la posizione e la velocità di un
+oggetto in movimento. Sono eseguite dalle seguenti funzioni:
+
+```{python, eval=FALSE}
+# La @ è l'operatore moltiplicazione di matrice.
+
+def calculate_movement(state: np.ndarray, timedelta: float, control: float):
+    A = np.array([[1, timedelta], [0, 1]])
+    B = np.array([[0.5 * timedelta ** 2], [timedelta]])
+    return A @ state + B * control
+
+
+def get_a_priori_error_cov(state_cov, timedelta, Q):
+    A = np.array([[1, timedelta], [0, 1]])
+    return A @ state_cov @ A.T + Q
+```
+
+`calculate_movement` è la legge del moto accelerato sotto forma matriciale, dove il parametro `control` sta a
+indicare l'accelerazione dell'oggetto. La usiamo sia per fare le predizioni all'interno del Kalman Filter, sia
+per simulare poi l'oggetto in movimento.
+
+`get_a_priori_error_cov` fa invece la stima a priori della covarianza. Tramite $Q$, va a tenere in conto
+dell'incertezza dovuta al rumore del processo.
+
+Le stime a posteriori sono calcolate tramite le seguenti funzioni:
+
+```{python, eval=FALSE}
+def get_gain(state_cov, mea_cov):
+    return state_cov @ inv(state_cov + mea_cov)
+
+def get_a_posteriori_estimate(a_priori_estimate, measurement, gain):
+    return a_priori_estimate + gain @ (measurement - a_priori_estimate)
+
+
+def get_a_posteriori_error_cov(previous_cov, gain):
+    return (np.identity(2) - gain) @ previous_cov
+```
+
+Tramite `get_gain`, si va a calcolare il Kalman Gain, mentre le altre due funzioni vanno a calcolare
+la stima e la covarianza a posteriori basate sulla misurazione e sul gain.
+
+## Simulazione
+
+La simulazione è implementata dal seguente codice, nel file `kalman_filter/kalman.py`.
+
+```{python, eval=FALSE}
+def simulate_moving_object(
+    real_state, real_process_cov, real_sensor_cov, acceleration,
+    kalman_state=None, kalman_state_cov=None, kalman_process_cov=None,
+    kalman_sensor_cov=None, timedelta=1):
+    ...
+    kf = kalman_filter(...)
+    next(kf)
+    while True:
+        real_state = calculate_movement(real_state, timedelta, acceleration)
+        real_state += noise(real_process_cov)
+        measurement = real_state + noise(real_sensor_cov)
+        kalman_prediction = kf.send(measurement)
+        yield SimResult(real_state, measurement, kalman_prediction)
+```
+
+Lo stato iniziale viene passato tramite il parametro `real_state`. A ogni iterazione, lo stato viene ricalcolato tramite `calculate_movement`.
+Allo stato viene quindi aggiunto un rumore casuale campionato da una distribuzione gaussiana multivariata,
+secondo la covarianza `real_process_cov`, passata come argomento alla funzione.
+Viene quindi simulata una misurazione sullo stato, prendendo lo stato reale e aggiungendogli un rumore casuale, la cui covarianza è configurabile
+tramite il parametro `real_sensor_cov`.
+
+La misurazione viene poi mandata al Kalman Filter, che provvede a produrre una predizione.
+La funzione quindi dà in output lo stato reale, la misurazione effettuata, e la corrispondente predizione fatta dal Kalman Filter, 
+per poi procedere all'iterazione successiva in cui ripete il procedimento.
 
 # Prove
 
