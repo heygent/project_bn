@@ -207,7 +207,7 @@ Quando la funzione non riceve parametri riguardanti il Kalman Filter, li imposta
 iniziale dello stato la covarianza reale del processo.
 
 Dal grafico possiamo vedere come le misurazioni effettuate nelle fasi iniziali del processo, influiscano in maniera più importante sull l'andamento della stima.
-Nelle ultime fasi invece vediamo che misurazioni molto sbilanciate fanno cambiare di poco la stima, come nel caso della velocità verso l'istante 25.
+Nelle ultime fasi. Vediamo invece che misurazioni molto sbilanciate fanno cambiare di poco la stima, come nel caso della velocità verso l'istante 25.
 
 In seguito mostriamo covarianza dello stato e Kalman Gain nell'ultimo istante di simulazione.
 
@@ -309,9 +309,9 @@ di troppo poco per avvicinarsi a quella reale.
 
 ## Stime corrette, cov. sensori reale alta, cov. sensori stimata vicina a 0
 
-In questo esperimento, vogliamo simulare un processo molto deterministico, dove la stima del processo senza il contributo delle osservazioni
+In questo esperimento, vogliamo simulare un processo deterministico, dove la stima del processo senza il contributo delle osservazioni
 darebbe dei buoni risultati di per sé. Tuttavia, vogliamo che il Kalman Filter dia più peso alle osservazioni, che in questo caso
-faremo essere molto imprecise. Per fare ciò, diamo una covarianza al rumore dei sensori nel processo reale, e una bassa a quella
+saranno molto imprecise. Per fare ciò, diamo un alta covarianza al rumore dei sensori nel processo reale, e una bassa covarianza a quella
 stimata del Kalman Filter.
 
 ```{python, fig.cap="Risultati per il quinto esperimento."}
