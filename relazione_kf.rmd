@@ -102,8 +102,8 @@ def get_a_priori_error_cov(state_cov, timedelta, Q):
     return A @ state_cov @ A.T + Q
 ```
 
-`calculate_movement` è la legge del moto accelerato sotto forma matriciale, dove il parametro `control` sta a
-indicare l'accelerazione dell'oggetto. La usiamo sia per fare le predizioni all'interno del Kalman Filter, sia
+`calculate_movement` è una funzione che calcola posizione e velocità a partire dalla legge oraria del moto accellerato, dove il parametro `control` sta a
+indicare il valore dell'accelerazione dell'oggetto. La usiamo sia per fare le predizioni all'interno del Kalman Filter, sia
 per simulare poi l'oggetto in movimento.
 
 `get_a_priori_error_cov` fa invece la stima a priori della covarianza. Tramite $Q$, va a tenere in conto
@@ -153,7 +153,7 @@ Viene quindi simulata una misurazione sullo stato, prendendo lo stato reale e ag
 tramite il parametro `real_sensor_cov`.
 
 La misurazione viene poi mandata al Kalman Filter, che provvede a produrre una predizione.
-La funzione quindi dà in output lo stato reale, la misurazione effettuata, e la corrispondente predizione fatta dal Kalman Filter, 
+La funzione quindi restituisce in output lo stato reale, la misurazione effettuata, e la corrispondente predizione fatta dal Kalman Filter,
 per poi procedere all'iterazione successiva in cui ripete il procedimento.
 
 # Prove

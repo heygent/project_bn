@@ -164,9 +164,7 @@ def main():
     print(
         "-------------------------------------------------------------------------------------"
     )
-    print(
-        "INSURANCE DIVERSA COMPLESSITÀ 10% evidenze - 50% map"
-    )
+    print("INSURANCE DIVERSA COMPLESSITÀ 10% evidenze - 50% map")
     for i in range(10):
 
         net = BayesNet(parse_bif_spec("resources/insurance.xml"))
@@ -193,21 +191,19 @@ def main():
     print(
         "-------------------------------------------------------------------------------------"
     )
-    print(
-        "HAILFINDER - DOMINIO MEDIO  10% evidenze - 50% map"
-    )
+    print("HAILFINDER - DOMINIO MEDIO  10% evidenze - 50% map")
     for i in range(3):
 
-    net = BayesNet(parse_bif_spec("resources/hailfinder.xml"))
-    evidences, map_variables = create_random_evidence(
-        len(net.nodes), net, 10, 50
-    )
-    # print(len(evidences), len(map_variables)), print(len(net.nodes))
-    with benchmark("mpe") as mpe:
-        ris_mpe = mpe_ask(evidences, net)
+        net = BayesNet(parse_bif_spec("resources/hailfinder.xml"))
+        evidences, map_variables = create_random_evidence(
+            len(net.nodes), net, 10, 50
+        )
+        # print(len(evidences), len(map_variables)), print(len(net.nodes))
+        with benchmark("mpe") as mpe:
+            ris_mpe = mpe_ask(evidences, net)
 
-    with benchmark("map") as map:
-        ris_map = map_ask(map_variables, evidences, net)
+        with benchmark("map") as map:
+            ris_map = map_ask(map_variables, evidences, net)
 
     print(
         "-------------------------------------------------------------------------------------"
@@ -229,7 +225,6 @@ def main():
 
     with benchmark("map") as map:
         ris_map = map_ask(map_variables, evidences, net)
-
 
     print(
         "-------------------------------------------------------------------------------------"

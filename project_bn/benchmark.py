@@ -24,4 +24,4 @@ def benchmark(name, print_result=True):
     b.end = time.perf_counter_ns()
     # gc.enable()
     # if print_result:
-    # print(f'Benchmark "{name}" took {b.duration_s} s')
+    print(f'Benchmark "{name}" took {b.duration_s} s')
