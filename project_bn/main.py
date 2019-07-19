@@ -10,21 +10,182 @@ import os
 
 def main():
 
+    ris1 = 0
+    ris2 = 0
+
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("CHILD - DOMINIO PICCOLO - EVIDENZE 10% MAP 25% ")
+
+    for i in range(100):
+
+        net = BayesNet(parse_bif_spec("resources/child.xml"))
+        evidences, map_variables = create_random_evidence(
+            len(net.nodes), net, 40, 10
+        )
+        # print(len(evidences), len(map_variables)), print(len(net.nodes))
+        with benchmark("") as mpe:
+            ris_mpe = mpe_ask(evidences, net)
+
+        with benchmark("") as map:
+            ris_map = map_ask(map_variables, evidences, net)
+
+        ris1 = (mpe.duration_s + ris1) / 2
+        ris2 = (map.duration_s + ris2) / 2
+
+        if i == 99:
+            print("mpe = ", ris1, "\nmap = ", ris2)
+
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("CHILD - DOMINIO PICCOLO EVIDENZE 10% MAP 50% ")
+
+    for i in range(100):
+
+        net = BayesNet(parse_bif_spec("resources/child.xml"))
+        evidences, map_variables = create_random_evidence(
+            len(net.nodes), net, 40, 25
+        )
+        # print(len(evidences), len(map_variables)), print(len(net.nodes))
+        with benchmark("") as mpe:
+            ris_mpe = mpe_ask(evidences, net)
+
+        with benchmark("") as map:
+            ris_map = map_ask(map_variables, evidences, net)
+
+        ris1 = (mpe.duration_s + ris1) / 2
+        ris2 = (map.duration_s + ris2) / 2
+
+        if i == 99:
+            print("mpe = ", ris1, "\nmap = ", ris2)
+
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    print("CHILD - DOMINIO PICCOLO 10% evidenze 75% MAP")
+
+    for i in range(100):
+
+        net = BayesNet(parse_bif_spec("resources/child.xml"))
+        evidences, map_variables = create_random_evidence(
+            len(net.nodes), net, 10, 50
+        )
+        # print(len(evidences), len(map_variables)), print(len(net.nodes))
+        with benchmark("") as mpe:
+            ris_mpe = mpe_ask(evidences, net)
+
+        with benchmark("") as map:
+            ris_map = map_ask(map_variables, evidences, net)
+
+        ris1 = (mpe.duration_s + ris1) / 2
+        ris2 = (map.duration_s + ris2) / 2
+
+        if i == 99:
+            print("mpe = ", ris1, "\nmap = ", ris2)
+
+    print(
+        "-------------------------------------------------------------------------------------"
+    )
+    # print("CHILD - DOMINIO PICCOLO 10% evidenze 40% map")
+    #
+    # for i in range(100):
+    #
+    #     net = BayesNet(parse_bif_spec("resources/child.xml"))
+    #     evidences, map_variables = create_random_evidence(
+    #         len(net.nodes), net, 10, 40
+    #     )
+    #     # print(len(evidences), len(map_variables)), print(len(net.nodes))
+    #     with benchmark("") as mpe:
+    #         ris_mpe = mpe_ask(evidences, net)
+    #
+    #     with benchmark("") as map:
+    #         ris_map = map_ask(map_variables, evidences, net)
+    #
+    #     ris1 = (mpe.duration_s + ris1) / 2
+    #     ris2 = (map.duration_s + ris2) / 2
+    #
+    #     if i == 99:
+    #         print("mpe = ", ris1, "\nmap = ", ris2)
+    #
     # print(
     #     "-------------------------------------------------------------------------------------"
     # )
-    # print("CHILD - DOMINIO PICCOLO - EVIDENZE 25% MAP 25% ")
-    # net = BayesNet(parse_bif_spec("resources/child.xml"))
-    # evidences, map_variables = create_random_evidence(
-    #     len(net.nodes), net, 25, 25
+    # print("CHILD - DOMINIO PICCOLO 25% evidenze 40% map")
+    #
+    # for i in range(100):
+    #
+    #     net = BayesNet(parse_bif_spec("resources/child.xml"))
+    #     evidences, map_variables = create_random_evidence(
+    #         len(net.nodes), net, 25, 40
+    #     )
+    #     # print(len(evidences), len(map_variables)), print(len(net.nodes))
+    #     with benchmark("") as mpe:
+    #         ris_mpe = mpe_ask(evidences, net)
+    #
+    #     with benchmark("") as map:
+    #         ris_map = map_ask(map_variables, evidences, net)
+    #
+    #     ris1 = (mpe.duration_s + ris1) / 2
+    #     ris2 = (map.duration_s + ris2) / 2
+    #
+    #     if i == 99:
+    #         print("mpe = ", ris1, "\nmap = ", ris2)
+    #
+    # print(
+    #     "-------------------------------------------------------------------------------------"
     # )
-    # print(len(evidences), len(map_variables)), print(len(net.nodes))
-    # with benchmark("mpe"):
-    #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
-    #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
+    # print("CHILD - DOMINIO PICCOLO 75% evidenze 40% map")
+    #
+    # for i in range(100):
+    #
+    #     net = BayesNet(parse_bif_spec("resources/child.xml"))
+    #     evidences, map_variables = create_random_evidence(
+    #         len(net.nodes), net, 50, 40
+    #     )
+    #     # print(len(evidences), len(map_variables)), print(len(net.nodes))
+    #     with benchmark("") as mpe:
+    #         ris_mpe = mpe_ask(evidences, net)
+    #
+    #     with benchmark("") as map:
+    #         ris_map = map_ask(map_variables, evidences, net)
+    #
+    #     ris1 = (mpe.duration_s + ris1) / 2
+    #     ris2 = (map.duration_s + ris2) / 2
+    #
+    #     if i == 99:
+    #         print("mpe = ", ris1, "\nmap = ", ris2)
+    #
+    # print(
+    #     "-------------------------------------------------------------------------------------"
+    # )
+    # print(
+    #     "INSURANCE DIVERSA COMPLESSITÀ 10% evidenze - 50% map"
+    # )
+    # for i in range(10):
+    #
+    #     net = BayesNet(parse_bif_spec("resources/insurance.xml"))
+    #     evidences, map_variables = create_random_evidence(
+    #         len(net.nodes), net, 10, 50
+    #     )
+    #     # print(len(evidences), len(map_variables)), print(len(net.nodes))
+    #     with benchmark("") as mpe:
+    #         ris_mpe = mpe_ask(evidences, net)
+    #
+    #     with benchmark("") as map:
+    #         ris_map = map_ask(map_variables, evidences, net)
+    #
+    #     ris1 = (mpe.duration_s + ris1) / 2
+    #     ris2 = (map.duration_s + ris2) / 2
+    #
+    #     if i == 9:
+    #         print("mpe = ", ris1, "\nmap = ", ris2)
+    #
     # print(
     #     "-------------------------------------------------------------------------------------"
     # )
@@ -32,147 +193,54 @@ def main():
     # print(
     #     "-------------------------------------------------------------------------------------"
     # )
-    # print("CHILD - DOMINIO PICCOLO 50% evidenze 10% map")
-    # net = BayesNet(parse_bif_spec("resources/child.xml"))
-    # evidences, map_variables = create_random_evidence(
-    #     len(net.nodes), net, 50, 10
-    # )
-    # with benchmark("mpe"):
-    #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
-    #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
     # print(
-    #     "-------------------------------------------------------------------------------------"
+    #     "HAILFINDER - DOMINIO MEDIO  10% evidenze - 50% map"
     # )
+    # for i in range(3):
     #
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    # print("CHILD - DOMINIO PICCOLO 75% evidenze 10% map")
-    # net = BayesNet(parse_bif_spec("resources/child.xml"))
-    # evidences, map_variables = create_random_evidence(
-    #     len(net.nodes), net, 75, 10
-    # )
-    # with benchmark("mpe"):
-    #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
-    #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    #
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    # print("CHILD - DOMINIO PICCOLO 10% evidenze 25% map")
-    # net = BayesNet(parse_bif_spec("resources/child.xml"))
-    # evidences, map_variables = create_random_evidence(
-    #     len(net.nodes), net, 10, 25
-    # )
-    # with benchmark("mpe"):
-    #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
-    #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    #
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    # print("CHILD - DOMINIO PICCOLO 10% evidenze 50% map")
-    # net = BayesNet(parse_bif_spec("resources/child.xml"))
+    # net = BayesNet(parse_bif_spec("resources/hailfinder.xml"))
     # evidences, map_variables = create_random_evidence(
     #     len(net.nodes), net, 10, 50
     # )
-    # with benchmark("mpe"):
+    # # print(len(evidences), len(map_variables)), print(len(net.nodes))
+    # with benchmark("mpe") as mpe:
     #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
+    #
+    # with benchmark("map") as map:
     #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
     #
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    # print("CHILD - DOMINIO PICCOLO 10% evidenze 75% map")
-    # net = BayesNet(parse_bif_spec("resources/child.xml"))
-    # evidences, map_variables = create_random_evidence(
-    #     len(net.nodes), net, 10, 75
-    # )
-    # with benchmark("mpe"):
-    #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
-    #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
     #
+    #     # ris1 = (mpe.duration_s + ris1) / 2
+    #     # ris2 = (map.duration_s + ris2) / 2
+    #     # print("iterazione n ", i + 1)
+    #     # if i == 2:
+    #     #     print("mpe = ", ris1, "\nmap = ", ris2)
     # print(
     #     "-------------------------------------------------------------------------------------"
     # )
-    # print(
-    #     "INSURANCE STESSE EVIDENZE  - DIVERSA COMPLESSITÀ 25% evidenze - 10% map"
-    # )
-    # net = BayesNet(parse_bif_spec("resources/insurance.xml"))
-    # evidences, map_variables = create_random_evidence(
-    #     len(net.nodes), net, 25, 10
-    # )
-    # with benchmark("mpe"):
-    #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
-    #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
+
     # print(
     #     "-------------------------------------------------------------------------------------"
     # )
+    # print("win95pts - DOMINIO GRANDE 50% evidenze - 10% map")
+    # # for i in range(3):
     #
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    print(
-        "HAILFINDER - DOMINIO MEDIO - STESSE EVIDENZE 25% evidenze - 10% map"
-    )
-    net = BayesNet(parse_bif_spec("resources/hailfinder.xml"))
-    evidences, map_variables = create_random_evidence(
-        len(net.nodes), net, 25, 25
-    )
-    with benchmark("mpe"):
-        ris_mpe = mpe_ask(evidences, net)
-    print(ris_mpe)
-    with benchmark("map"):
-        ris_map = map_ask(map_variables, evidences, net)
-    print(ris_map)
-    print(
-        "-------------------------------------------------------------------------------------"
-    )
-    #
-    # print(
-    #     "-------------------------------------------------------------------------------------"
-    # )
-    # print("win95pts - DOMINIO GRANDE - STESSE EVIDENZE 25% evidenze - 10% map")
     # net = BayesNet(parse_bif_spec("resources/win95pts.xml"))
     # evidences, map_variables = create_random_evidence(
-    #     len(net.nodes), net, 25, 10
+    #     len(net.nodes), net, 10, 50
     # )
-    # with benchmark("mpe"):
+    # # print(len(evidences), len(map_variables)), print(len(net.nodes))
+    # with benchmark("mpe") as mpe:
     #     ris_mpe = mpe_ask(evidences, net)
-    # print(ris_mpe)
-    # with benchmark("map"):
+    #
+    # with benchmark("map") as map:
     #     ris_map = map_ask(map_variables, evidences, net)
-    # print(ris_map)
+    #
+    #     # ris1 = (mpe.duration_s + ris1) / 2
+    #     # ris2 = (map.duration_s + ris2) / 2
+    #     #
+    #     # if i == 2:
+    #     #     print("mpe = ", ris1, "\nmap = ", ris2)
     # print(
     #     "-------------------------------------------------------------------------------------"
     # )
